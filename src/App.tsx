@@ -4,6 +4,7 @@ import Dashboard from './pages/Dashboard';
 import SubmitReport from './pages/SubmitReport';
 import RoleSelection from './pages/RoleSelection';
 import MentorLogin from './pages/MentorLogin';
+import StudentLogin from './pages/StudentLogin'
 
 export default function App() {
   return (
@@ -14,6 +15,9 @@ export default function App() {
         
         {/* Mentor Login */}
         <Route path="/mentor-login" element={<MentorLogin />} />
+
+        {/* Student Login */}
+        <Route path="/student-login" element={<StudentLogin />} />
 
         {/* Main Application Layout for Dashboard & Reports */}
         <Route element={<Layout />}>
