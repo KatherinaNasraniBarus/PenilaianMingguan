@@ -33,7 +33,7 @@ export default function RoleSelection() {
           </div>
           <h2 className="text-2xl font-black text-emerald-950 mb-2">Mentor</h2>
           <p className="text-emerald-700/60 text-sm mb-8 leading-relaxed">
-            Akses dashboard koordinator untuk memantau perkembangan mahasiswa.
+            Akses dashboard Mentor.
           </p>
           <div className="flex items-center gap-2 text-emerald-600 font-bold group-hover:gap-4 transition-all">
             Pilih Mentor <ArrowRight size={20} />
@@ -52,17 +52,13 @@ export default function RoleSelection() {
           </div>
           <h2 className="text-2xl font-black text-emerald-950 mb-2">Mahasiswa</h2>
           <p className="text-emerald-700/60 text-sm mb-8 leading-relaxed">
-            Kirim laporan mingguan dan pantau poin aktivitas Anda.
+           Laporan Mingguan Mahasiswa.
           </p>
           <div className="flex items-center gap-2 text-emerald-600 font-bold group-hover:gap-4 transition-all">
             Pilih Mahasiswa <ArrowRight size={20} />
           </div>
         </motion.button>
       </div>
-
-      <p className="mt-16 text-emerald-700/40 text-xs font-bold tracking-widest uppercase">
-        © 2026 Student Portal System
-      </p>
     </div>
   );
 }
