@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 
-export default function App() {
+export default function SubmitReport() {
   const [submitted, setSubmitted] = useState(false);
   const [formData, setFormData] = useState({
     nama: "",

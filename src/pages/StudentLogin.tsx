@@ -1,21 +1,52 @@
 import React, { useState } from "react";
-import { motion } from "motion/react";
-import { User, Lock, ArrowRight, ChevronLeft } from "lucide-react";
+import { motion, AnimatePresence } from "motion/react";
+import { User, Lock, ArrowRight, ChevronLeft, AlertCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 export default function StudentLogin() {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({ nim: "", password: "" });
   const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    // Simulate login
-    setTimeout(() => {
+    setErrorMessage(""); // Reset pesan error sebelum mencoba login
+    
+    try {
+      // Menembak API PHP (Pastikan XAMPP Apache & MySQL menyala)
+      const response = await fetch("http://localhost/api-penilaian/login.php", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          nim: formData.nim,
+          password: formData.password
+        }),
+      });
+
+      const result = await response.json();
+
+      if (result.status === "success") {
+        // Jika login berhasil, simpan data sesi ke localStorage
+        localStorage.setItem("userRole", result.data.role);
+        localStorage.setItem("userNim", result.data.nim);
+        localStorage.setItem("userName", result.data.nama);
+        
+        // Arahkan ke halaman dashboard
+        navigate("/dashboard");
+      } else {
+        // Jika login gagal (NIM tidak ada atau password salah)
+        setErrorMessage(result.message || "Gagal melakukan login. Silakan coba lagi.");
+      }
+    } catch (error) {
+      console.error("Error logging in:", error);
+      setErrorMessage("Terjadi kesalahan koneksi ke server. Pastikan XAMPP menyala.");
+    } finally {
       setLoading(false);
-      navigate("/dashboard");
-    }, 1000);
+    }
   };
 
   return (
@@ -33,10 +64,25 @@ export default function StudentLogin() {
         </button>
 
         <div className="bg-white p-10 rounded-[2.5rem] shadow-2xl shadow-emerald-100 border border-emerald-100">
-          <div className="text-center mb-10">
+          <div className="text-center mb-8">
             <h1 className="text-3xl font-black text-emerald-950">Login Mahasiswa</h1>
             <p className="text-emerald-700/60 mt-2 font-medium">Masukkan NIM dan Password Anda</p>
           </div>
+
+          {/* Menampilkan Pesan Error Dinamis */}
+          <AnimatePresence>
+            {errorMessage && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                className="mb-6 p-4 bg-red-50 border border-red-200 rounded-2xl flex items-center gap-3 text-red-600"
+              >
+                <AlertCircle size={20} className="shrink-0" />
+                <p className="text-sm font-bold">{errorMessage}</p>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
