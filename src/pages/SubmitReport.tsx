@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 
-export default function SubmitReport() {
+export default function App() {
   const [submitted, setSubmitted] = useState(false);
   const [formData, setFormData] = useState({
     nama: "",
@@ -75,12 +75,12 @@ export default function SubmitReport() {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-slate-50 font-sans">
-      <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-8 sticky top-0 z-20 shrink-0">
+    <div className="flex flex-col h-full bg-emerald-50/20 min-h-screen">
+      <header className="h-16 bg-white/80 backdrop-blur-md border-b border-emerald-100 flex items-center justify-between px-8 sticky top-0 z-20 shrink-0">
         <div className="flex items-center gap-2">
-          <span className="text-sm font-medium text-slate-500">Laporan</span>
-          <ChevronRight size={14} className="text-slate-300" />
-          <span className="text-sm font-bold text-slate-900">Laporan Mingguan</span>
+          <span className="text-sm font-medium text-emerald-600">Laporan</span>
+          <ChevronRight size={14} className="text-emerald-200" />
+          <span className="text-sm font-bold text-emerald-900">Laporan Mingguan</span>
         </div>
       </header>
 
@@ -90,15 +90,15 @@ export default function SubmitReport() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
         >
-          <h2 className="text-3xl font-bold text-slate-900 mb-2 tracking-tight">
+          <h2 className="text-3xl font-bold text-emerald-950 mb-2 tracking-tight">
             Laporan Mingguan Mahasiswa
           </h2>
           
           {/* ENHANCED DEADLINE UI */}
           <div className="flex flex-wrap items-center gap-3 mb-8 mt-4">
-            <div className="flex items-center gap-2 px-3 py-1.5 bg-white border border-slate-200 rounded-full shadow-sm">
-              <Calendar size={14} className="text-blue-500" />
-              <span className="text-xs font-semibold text-slate-600 uppercase tracking-wider">Periode Mingguan</span>
+            <div className="flex items-center gap-2 px-3 py-1.5 bg-white border border-emerald-100 rounded-full shadow-sm">
+              <Calendar size={14} className="text-emerald-500" />
+              <span className="text-xs font-semibold text-emerald-600 uppercase tracking-wider">Periode Mingguan</span>
             </div>
             
             <div className={`flex items-center gap-2 px-4 py-1.5 rounded-full border shadow-sm transition-colors duration-300 ${
@@ -113,7 +113,7 @@ export default function SubmitReport() {
             </div>
 
             {!passedDeadline && (
-              <div className="flex items-center gap-1.5 text-xs text-slate-400 font-medium italic animate-pulse">
+              <div className="flex items-center gap-1.5 text-xs text-emerald-400 font-medium italic animate-pulse">
                 <Timer size={12} />
                 Sistem menerima laporan minggu ini
               </div>
@@ -146,8 +146,8 @@ export default function SubmitReport() {
                   <CheckCircle size={24} />
                 </div>
                 <div>
-                  <p className="font-bold text-lg">Laporan Terkirim!</p>
-                  <p className="text-sm opacity-80">Terima kasih telah memperbarui aktivitas mingguan Anda tepat waktu.</p>
+                  <p className="font-bold text-lg text-emerald-900">Laporan Terkirim!</p>
+                  <p className="text-sm text-emerald-600">Terima kasih telah memperbarui aktivitas mingguan Anda tepat waktu.</p>
                 </div>
               </motion.div>
             )}
@@ -155,16 +155,16 @@ export default function SubmitReport() {
 
           <form className="space-y-8" onSubmit={handleSubmit}>
             {/* NAMA */}
-            <section className="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow duration-300">
+            <section className="bg-white p-8 rounded-2xl border border-emerald-100 shadow-sm hover:shadow-md transition-shadow duration-300">
               <div className="flex items-center gap-3 mb-6">
-                <div className="p-2 bg-blue-50 rounded-lg text-blue-600">
+                <div className="p-2 bg-emerald-50 rounded-lg text-emerald-600">
                   <Info size={20} />
                 </div>
-                <h3 className="text-xl font-bold text-slate-900">Data Mahasiswa</h3>
+                <h3 className="text-xl font-bold text-emerald-900">Data Mahasiswa</h3>
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-bold text-slate-700 ml-1">
+                <label className="text-sm font-bold text-emerald-700 ml-1">
                   Nama Lengkap
                 </label>
                 <input
@@ -173,8 +173,8 @@ export default function SubmitReport() {
                   value={formData.nama}
                   onChange={handleChange}
                   placeholder="Masukkan nama sesuai KTM"
-                  className={`w-full rounded-xl border px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all duration-200 ${
-                    errors.nama ? "border-red-300 bg-red-50" : "border-slate-200 bg-slate-50/50"
+                  className={`w-full rounded-xl border px-4 py-3 focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none transition-all duration-200 ${
+                    errors.nama ? "border-red-300 bg-red-50" : "border-emerald-100 bg-emerald-50/20"
                   }`}
                 />
                 {errors.nama && (
@@ -184,12 +184,12 @@ export default function SubmitReport() {
             </section>
 
             {/* AKTIVITAS */}
-            <section className="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow duration-300">
+            <section className="bg-white p-8 rounded-2xl border border-emerald-100 shadow-sm hover:shadow-md transition-shadow duration-300">
               <div className="flex items-center gap-3 mb-6">
-                <div className="p-2 bg-indigo-50 rounded-lg text-indigo-600">
+                <div className="p-2 bg-emerald-50 rounded-lg text-emerald-600">
                   <Activity size={20} />
                 </div>
-                <h3 className="text-xl font-bold text-slate-900">Aktivitas Mingguan</h3>
+                <h3 className="text-xl font-bold text-emerald-900">Aktivitas Mingguan</h3>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
@@ -204,7 +204,7 @@ export default function SubmitReport() {
                   { label: "Kunjungan BPU", name: "kunjunganBpu" }
                 ].map((item, index) => (
                   <div key={index} className="space-y-2">
-                    <label className="text-sm font-bold text-slate-700 ml-1">
+                    <label className="text-sm font-bold text-emerald-700 ml-1">
                       {item.label}
                     </label>
                     <input
@@ -213,8 +213,8 @@ export default function SubmitReport() {
                       name={item.name}
                       value={formData[item.name as keyof typeof formData]}
                       onChange={handleChange}
-                      className={`w-full border rounded-xl px-4 py-3 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all duration-200 ${
-                        errors[item.name] ? "border-red-300 bg-red-50" : "border-slate-200 bg-slate-50/50"
+                      className={`w-full border rounded-xl px-4 py-3 focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none transition-all duration-200 ${
+                        errors[item.name] ? "border-red-300 bg-red-50" : "border-emerald-100 bg-emerald-50/20"
                       }`}
                     />
                     {errors[item.name] && (
@@ -226,16 +226,16 @@ export default function SubmitReport() {
             </section>
 
             {/* LINK DRIVE */}
-            <section className="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow duration-300">
+            <section className="bg-white p-8 rounded-2xl border border-emerald-100 shadow-sm hover:shadow-md transition-shadow duration-300">
               <div className="flex items-center gap-3 mb-6">
                 <div className="p-2 bg-emerald-50 rounded-lg text-emerald-600">
                   <LinkIcon size={20} />
                 </div>
-                <h3 className="text-xl font-bold text-slate-900">Link Evidence</h3>
+                <h3 className="text-xl font-bold text-emerald-900">Link Evidence</h3>
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-bold text-slate-700 ml-1">
+                <label className="text-sm font-bold text-emerald-700 ml-1">
                   Link Google Drive
                 </label>
                 <input
@@ -245,13 +245,13 @@ export default function SubmitReport() {
                   onChange={handleChange}
                   placeholder="https://drive.google.com/..."
                   className={`w-full border rounded-xl px-4 py-3 focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none transition-all duration-200 ${
-                    errors.drive ? "border-red-300 bg-red-50" : "border-slate-200 bg-slate-50/50"
+                    errors.drive ? "border-red-300 bg-red-50" : "border-emerald-100 bg-emerald-50/20"
                   }`}
                 />
                 {errors.drive && (
                   <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-red-500 text-xs font-medium mt-1 ml-1">{errors.drive}</motion.p>
                 )}
-                <p className="text-[10px] text-slate-400 mt-2 italic ml-1">
+                <p className="text-[10px] text-emerald-400 mt-2 italic ml-1">
                   *Pastikan link dapat diakses oleh koordinator
                 </p>
               </div>
@@ -267,7 +267,7 @@ export default function SubmitReport() {
                 className={`px-10 py-4 rounded-2xl text-white font-bold shadow-lg flex items-center gap-3 transition-all duration-300
                 ${submitted 
                   ? "bg-slate-300 cursor-not-allowed shadow-none" 
-                  : "bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-blue-200"}`}
+                  : "bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 shadow-emerald-200"}`}
               >
                 {submitted ? <CheckCircle size={22} /> : <CheckCircle size={22} className="animate-pulse" />}
                 {submitted ? "Laporan Terkirim" : "Submit Laporan Sekarang"}

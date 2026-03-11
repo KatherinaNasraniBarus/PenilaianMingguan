@@ -14,12 +14,12 @@ export default function Sidebar() {
       
       {/* LOGO */}
       <div className="p-6 flex items-center gap-3">
-        <div className="w-10 h-10 rounded-lg bg-blue-600 flex items-center justify-center text-white">
+        <div className="w-10 h-10 rounded-lg bg-emerald-600 flex items-center justify-center text-white shadow-sm shadow-emerald-200">
           <GraduationCap size={24} />
         </div>
         <div>
-          <h1 className="font-bold text-lg leading-tight">UniIntern</h1>
-          <p className="text-xs text-slate-500">Internship Portal</p>
+          <h1 className="font-bold text-lg leading-tight text-slate-900">UniIntern</h1>
+          <p className="text-xs text-slate-500 font-medium">Internship Portal</p>
         </div>
       </div>
 
@@ -33,15 +33,15 @@ export default function Sidebar() {
             <Link
               key={item.name}
               to={item.path}
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 ${
                 isActive
-                  ? "bg-blue-50 text-blue-600 font-semibold"
-                  : "text-slate-600 hover:bg-slate-50 font-medium"
+                  ? "bg-emerald-50 text-emerald-700 font-semibold"
+                  : "text-slate-600 hover:bg-slate-50 font-medium hover:text-slate-900"
               }`}
             >
               <Icon
                 size={20}
-                className={isActive ? "text-blue-600" : "text-slate-400"}
+                className={isActive ? "text-emerald-600" : "text-slate-400"}
               />
               <span className="text-sm">{item.name}</span>
             </Link>
@@ -51,8 +51,8 @@ export default function Sidebar() {
 
       {/* LOGOUT */}
       <div className="p-4 border-t border-slate-200">
-        <button className="w-full flex items-center gap-3 px-3 py-2.5 text-red-500 hover:bg-red-50 rounded-lg transition-colors">
-          <LogOut size={20} />
+        <button className="w-full flex items-center gap-3 px-3 py-2.5 text-red-500 hover:bg-red-50 rounded-lg transition-colors group">
+          <LogOut size={20} className="group-hover:scale-110 transition-transform" />
           <span className="text-sm font-medium">Logout</span>
         </button>
       </div>
