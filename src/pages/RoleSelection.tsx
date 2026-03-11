@@ -13,10 +13,10 @@ export default function RoleSelection() {
         className="text-center mb-12"
       >
         <h1 className="text-4xl font-black text-emerald-950 tracking-tight">
-          Selamat Datang
+          Selamat Datang di Portal
         </h1>
         <p className="text-emerald-700/60 mt-2 font-medium">
-          Silakan pilih untuk melanjutkan
+          Silakan pilih peran Anda untuk melanjutkan
         </p>
       </motion.div>
 
@@ -44,7 +44,7 @@ export default function RoleSelection() {
         <motion.button
           whileHover={{ scale: 1.05, y: -5 }}
           whileTap={{ scale: 0.95 }}
-          onClick={() => navigate("/dashboard")}
+          onClick={() => navigate("/student-login")}
           className="bg-white p-10 rounded-[2.5rem] border-2 border-emerald-100 shadow-xl shadow-emerald-100/50 flex flex-col items-center text-center group hover:border-emerald-500 transition-all duration-300"
         >
           <div className="w-24 h-24 bg-emerald-50 rounded-full flex items-center justify-center text-emerald-600 mb-6 group-hover:bg-emerald-600 group-hover:text-white transition-colors duration-300">
@@ -59,6 +59,10 @@ export default function RoleSelection() {
           </div>
         </motion.button>
       </div>
+
+      <p className="mt-16 text-emerald-700/40 text-xs font-bold tracking-widest uppercase">
+        © 2026 Student Portal System
+      </p>
     </div>
   );
 }
