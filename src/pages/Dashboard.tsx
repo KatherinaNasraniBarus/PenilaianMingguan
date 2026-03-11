@@ -1,57 +1,73 @@
-import { Bell, ChevronRight, Medal, Star, FileText, CheckCircle, Activity, History, Eye, Edit2, Info } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { ChevronRight, Medal, FileText, Link as LinkIcon, Paperclip } from "lucide-react";
 
 export default function Dashboard() {
+  const reports = [
+    {
+      id: 1,
+      date: "Nov 12, 2023",
+      type: "Frontend Dev",
+      desc: "Implemented responsive navigation...",
+      evidence: { type: "link", text: "Github PR" },
+      points: 15,
+    },
+    {
+      id: 2,
+      date: "Nov 11, 2023",
+      type: "Bug Fixing",
+      desc: "Resolved critical memory leak...",
+      evidence: { type: "file", text: "Error Log" },
+      points: 20,
+    },
+    {
+      id: 3,
+      date: "Nov 10, 2023",
+      type: "Documentation",
+      desc: "Updated API documentation...",
+      evidence: { type: "doc", text: "PDF Report" },
+      points: 0,
+    },
+    {
+      id: 4,
+      date: "Nov 09, 2023",
+      type: "Backend Dev",
+      desc: "Refactored user authentication...",
+      evidence: { type: "link", text: "Jira Ticket" },
+      points: 25,
+    },
+  ];
+
   return (
     <div className="flex flex-col h-full">
+
+      {/* HEADER */}
       <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-8 sticky top-0 z-10 shrink-0">
         <div className="flex items-center gap-2">
           <span className="text-sm font-medium text-slate-500">Student Portal</span>
           <ChevronRight size={16} className="text-slate-300" />
           <span className="text-sm font-bold text-slate-900">Overview</span>
         </div>
-        <div className="flex items-center gap-4">
-          <button className="p-2 text-slate-500 hover:bg-slate-100 rounded-full relative">
-            <Bell size={20} />
-            <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 border-2 border-white rounded-full"></span>
-          </button>
-          <div className="h-8 w-px bg-slate-200 mx-2"></div>
-          <div className="flex items-center gap-3 pl-2">
-            <div className="text-right hidden sm:block">
-              <p className="text-sm font-bold text-slate-900 leading-none">Alex Johnson</p>
-              <p className="text-xs text-slate-500 mt-1">Computer Science Senior</p>
-            </div>
-            <img src="https://i.pravatar.cc/150?u=alex" alt="Profile" className="w-10 h-10 rounded-full border border-slate-200" />
-          </div>
-        </div>
       </header>
 
       <div className="p-8 space-y-8 max-w-7xl mx-auto w-full">
-        <div className="flex flex-col gap-1">
-          <h1 className="text-3xl font-black text-slate-900 tracking-tight">Welcome back, Alex!</h1>
-          <p className="text-slate-500">You're currently in Week 8 of your internship. Keep up the great progress!</p>
+
+        {/* TITLE */}
+        <div>
+          <h1 className="text-3xl font-black text-slate-900">
+            Welcome back, Alex!
+          </h1>
         </div>
 
+        {/* CARDS */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+
           <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
             <div className="flex items-center justify-between mb-4">
               <div className="p-2 bg-blue-50 text-blue-600 rounded-lg">
                 <Medal size={24} />
               </div>
-              <span className="text-xs font-bold text-green-600 bg-green-50 px-2 py-1 rounded">+12% vs last month</span>
             </div>
             <p className="text-slate-500 text-sm font-medium">Total Points</p>
             <h3 className="text-2xl font-black text-slate-900">850</h3>
-          </div>
-          
-          <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-            <div className="flex items-center justify-between mb-4">
-              <div className="p-2 bg-indigo-50 text-indigo-600 rounded-lg">
-                <Star size={24} />
-              </div>
-            </div>
-            <p className="text-slate-500 text-sm font-medium">Current Grade</p>
-            <h3 className="text-2xl font-black text-slate-900">A-</h3>
           </div>
 
           <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
@@ -64,96 +80,60 @@ export default function Dashboard() {
             <h3 className="text-2xl font-black text-slate-900">12</h3>
           </div>
 
-          <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-            <div className="flex items-center justify-between mb-4">
-              <div className="p-2 bg-green-50 text-green-600 rounded-lg">
-                <CheckCircle size={24} />
-              </div>
-            </div>
-            <p className="text-slate-500 text-sm font-medium">Approved Reports</p>
-            <h3 className="text-2xl font-black text-slate-900">10</h3>
-          </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-1 bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-            <h2 className="text-lg font-bold text-slate-900 mb-6 flex items-center gap-2">
-              <Activity size={20} className="text-blue-600" />
-              Activity Progress
-            </h2>
-            <div className="space-y-6">
-              {[
-                { label: 'Seminar Attendance', value: 80, color: 'bg-blue-600' },
-                { label: 'Socialization Activities', value: 65, color: 'bg-blue-600' },
-                { label: 'Video Viralization', value: 45, color: 'bg-amber-500' },
-                { label: 'Monthly Reports', value: 100, color: 'bg-green-500' },
-                { label: 'Field Visits', value: 30, color: 'bg-indigo-500' },
-              ].map((item) => (
-                <div key={item.label}>
-                  <div className="flex justify-between text-sm mb-2">
-                    <span className="text-slate-600 font-medium">{item.label}</span>
-                    <span className="font-bold text-slate-900">{item.value}%</span>
-                  </div>
-                  <div className="w-full bg-slate-100 rounded-full h-2">
-                    <div className={`${item.color} h-2 rounded-full`} style={{ width: `${item.value}%` }}></div>
-                  </div>
-                </div>
-              ))}
-            </div>
+        {/* TABLE */}
+        <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left">
+
+              <thead>
+                <tr className="bg-slate-50 border-b border-slate-200">
+                  <th className="px-6 py-4 text-xs font-bold uppercase text-slate-500">Date</th>
+                  <th className="px-6 py-4 text-xs font-bold uppercase text-slate-500">Activity Type</th>
+                  <th className="px-6 py-4 text-xs font-bold uppercase text-slate-500">Description</th>
+                  <th className="px-6 py-4 text-xs font-bold uppercase text-slate-500">Evidence</th>
+                  <th className="px-6 py-4 text-xs font-bold uppercase text-slate-500 text-right">Points</th>
+                </tr>
+              </thead>
+
+              <tbody className="divide-y divide-slate-200">
+                {reports.map((row) => (
+                  <tr key={row.id} className="hover:bg-slate-50">
+
+                    <td className="px-6 py-4 text-sm font-medium">{row.date}</td>
+
+                    <td className="px-6 py-4 text-sm">{row.type}</td>
+
+                    <td className="px-6 py-4 text-sm text-slate-500">
+                      <div className="max-w-[220px] truncate">
+                        {row.desc}
+                      </div>
+                    </td>
+
+                    <td className="px-6 py-4 text-sm">
+                      <span className="text-blue-600 flex items-center gap-1">
+                        {row.evidence.type === "link" && <LinkIcon size={14} />}
+                        {row.evidence.type === "file" && <Paperclip size={14} />}
+                        {row.evidence.type === "doc" && <FileText size={14} />}
+                        {row.evidence.text}
+                      </span>
+                    </td>
+
+                    <td className="px-6 py-4 text-right font-mono">
+                      {row.points}
+                    </td>
+
+                  </tr>
+                ))}
+              </tbody>
+
+            </table>
           </div>
 
-          <div className="lg:col-span-2 bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-                <History size={20} className="text-blue-600" />
-                Recent Reports
-              </h2>
-              <Link to="/my-reports" className="text-sm font-semibold text-blue-600 hover:underline">View All</Link>
-            </div>
-            <div className="overflow-x-auto">
-              <table className="w-full text-left">
-                <thead>
-                  <tr className="text-slate-500 border-b border-slate-100 text-sm font-semibold">
-                    <th className="pb-3 px-2 font-medium">Date</th>
-                    <th className="pb-3 px-2 font-medium">Activity</th>
-                    <th className="pb-3 px-2 font-medium">Status</th>
-                    <th className="pb-3 px-2 text-right font-medium">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-50">
-                  {[
-                    { date: 'Oct 24, 2023', title: 'System Integration Seminar', type: 'Seminar Attendance', status: 'Approved', statusColor: 'text-green-600 bg-green-50', dotColor: 'bg-green-600', icon: Eye },
-                    { date: 'Oct 21, 2023', title: 'Marketing Video #3', type: 'Video Viralization', status: 'Pending', statusColor: 'text-amber-600 bg-amber-50', dotColor: 'bg-amber-600', icon: Edit2 },
-                    { date: 'Oct 18, 2023', title: 'Regional Office Visit', type: 'Field Visits', status: 'Approved', statusColor: 'text-green-600 bg-green-50', dotColor: 'bg-green-600', icon: Eye },
-                    { date: 'Oct 15, 2023', title: 'Monthly Progress Report - Sept', type: 'Monthly Reports', status: 'Rejected', statusColor: 'text-red-600 bg-red-50', dotColor: 'bg-red-600', icon: Info },
-                  ].map((row, i) => {
-                    const ActionIcon = row.icon;
-                    return (
-                      <tr key={i}>
-                        <td className="py-4 px-2 text-sm text-slate-600">{row.date}</td>
-                        <td className="py-4 px-2">
-                          <div className="flex flex-col">
-                            <span className="text-sm font-bold text-slate-900">{row.title}</span>
-                            <span className="text-xs text-slate-500">{row.type}</span>
-                          </div>
-                        </td>
-                        <td className="py-4 px-2">
-                          <span className={`inline-flex items-center gap-1.5 text-xs font-bold px-2.5 py-1 rounded-full ${row.statusColor}`}>
-                            <span className={`w-1.5 h-1.5 rounded-full ${row.dotColor}`}></span>
-                            {row.status}
-                          </span>
-                        </td>
-                        <td className="py-4 px-2 text-right">
-                          <button className="p-1.5 hover:bg-slate-100 rounded-lg text-slate-400 hover:text-slate-600 transition-colors">
-                            <ActionIcon size={18} />
-                          </button>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
+          {/* FOOTER */}
+          <div className="px-6 py-4 border-t border-slate-200 text-sm text-slate-500">
+            Showing 1 to 4 of 24 entries
           </div>
         </div>
       </div>

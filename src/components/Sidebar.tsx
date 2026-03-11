@@ -7,9 +7,6 @@ export default function Sidebar() {
   const navItems = [
     { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
     { name: 'Submit Report', path: '/submit-report', icon: FileText },
-    { name: 'My Reports', path: '/my-reports', icon: FolderOpen },
-    { name: 'Activity Points', path: '/activity-points', icon: Star },
-    { name: 'Mentor Feedback', path: '/mentor-feedback', icon: MessageSquare },
   ];
 
   return (
@@ -36,7 +33,7 @@ export default function Sidebar() {
                 isActive
                   ? 'bg-blue-50 text-blue-600 font-semibold'
                   : 'text-slate-600 hover:bg-slate-50 font-medium'
-              }`}
+              }]`}
             >
               <Icon size={20} className={isActive ? 'text-blue-600' : 'text-slate-400'} />
               <span className="text-sm">{item.name}</span>
@@ -54,23 +51,14 @@ export default function Sidebar() {
               : 'text-slate-600 hover:bg-slate-50 font-medium'
           }`}
         >
-          <Settings size={20} className={location.pathname === '/profile-settings' ? 'text-blue-600' : 'text-slate-400'} />
-          <span className="text-sm">Profile Settings</span>
+    
         </Link>
         <button className="w-full flex items-center gap-3 px-3 py-2.5 text-red-500 hover:bg-red-50 rounded-lg transition-colors mt-1">
           <LogOut size={20} />
           <span className="text-sm font-medium">Logout</span>
         </button>
         
-        <div className="mt-4 flex items-center gap-3 px-2">
-          <div className="w-8 h-8 rounded-full bg-slate-200 overflow-hidden">
-            <img src="https://i.pravatar.cc/150?u=alex" alt="Alex Johnson" className="w-full h-full object-cover" />
-          </div>
-          <div className="overflow-hidden">
-            <p className="text-sm font-semibold truncate">Alex Johnson</p>
-            <p className="text-xs text-slate-500 truncate">Computer Science Senior</p>
-          </div>
-        </div>
+    
       </div>
     </aside>
   );
