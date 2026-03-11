@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Layout from './components/Layout';
 import Dashboard from './pages/Dashboard';
 import SubmitReport from './pages/SubmitReport';
+import Sidebar from './components/Sidebar';
 
 export default function App() {
   return (
