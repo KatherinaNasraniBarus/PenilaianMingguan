@@ -39,7 +39,6 @@ export default function SubmitReport() {
   const hour = currentTime.getHours();
   const minute = currentTime.getMinutes();
 
-  // Deadline: Tuesday (2) at 23:59
   const passedDeadline =
     day > 2 || (day === 2 && (hour > 23 || (hour === 23 && minute > 59)));
 
@@ -93,8 +92,7 @@ export default function SubmitReport() {
           <h2 className="text-3xl font-bold text-emerald-950 mb-2 tracking-tight">
             Laporan Mingguan Mahasiswa
           </h2>
-          
-          {/* ENHANCED DEADLINE UI */}
+
           <div className="flex flex-wrap items-center gap-3 mb-8 mt-4">
             <div className="flex items-center gap-2 px-3 py-1.5 bg-white border border-emerald-100 rounded-full shadow-sm">
               <Calendar size={14} className="text-emerald-500" />
@@ -154,7 +152,6 @@ export default function SubmitReport() {
           </AnimatePresence>
 
           <form className="space-y-8" onSubmit={handleSubmit}>
-            {/* NAMA */}
             <section className="bg-white p-8 rounded-2xl border border-emerald-100 shadow-sm hover:shadow-md transition-shadow duration-300">
               <div className="flex items-center gap-3 mb-6">
                 <div className="p-2 bg-emerald-50 rounded-lg text-emerald-600">
@@ -183,7 +180,6 @@ export default function SubmitReport() {
               </div>
             </section>
 
-            {/* AKTIVITAS */}
             <section className="bg-white p-8 rounded-2xl border border-emerald-100 shadow-sm hover:shadow-md transition-shadow duration-300">
               <div className="flex items-center gap-3 mb-6">
                 <div className="p-2 bg-emerald-50 rounded-lg text-emerald-600">

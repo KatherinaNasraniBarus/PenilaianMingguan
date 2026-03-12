@@ -1,8 +1,24 @@
 import { LayoutDashboard, ClipboardList, LogOut, UserCircle } from "lucide-react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import logo from "../image/logobpjss.png";
 
 export default function Sidebar() {
   const location = useLocation();
+  const navigate = useNavigate();
+  const [userName, setUserName] = useState<string>("");
+
+  useEffect(() => {
+    const storedName = localStorage.getItem("userName");
+    if (storedName) {
+      setUserName(storedName);
+    }
+  }, []);
+
+  const handleLogout = () => {
+    localStorage.clear();
+    navigate("/");
+  };
 
   const menuItems = [
     { name: "Dashboard", path: "/dashboard", icon: LayoutDashboard },
@@ -10,12 +26,24 @@ export default function Sidebar() {
   ];
 
   return (
-    <aside className="w-64 bg-white border-r border-emerald-100 flex flex-col h-full">
-      <div className="p-6 border-b border-emerald-50">
-        <div className="flex items-center gap-3">
-          <div>
-            <h1 className="font-black text-emerald-950 leading-none">STUDENT</h1>
-            <p className="text-[10px] font-bold text-emerald-600 tracking-widest uppercase mt-1">Portal</p>
+    <aside className="w-64 bg-white border-r border-emerald-100 flex flex-col h-full shrink-0">
+      <div className="p-8 border-b border-emerald-50">
+        <div className="flex flex-col gap-1">
+          <div className="flex items-center gap-3">
+            <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center shadow-sm border border-emerald-50 shrink-0 overflow-hidden p-1">
+             <img 
+              src={logo}
+              alt="Logo"
+              className="w-full h-full object-contain"
+            />
+            </div>
+            <div>
+              <h1 className="text-3xl font-black text-emerald-950 tracking-tighter leading-none">SATU</h1>
+              <div className="flex items-center gap-1 mt-1">
+                <div className="h-[2px] w-3 bg-emerald-500"></div>
+                <p className="text-[10px] font-black text-emerald-600 tracking-[0.25em] uppercase">BPJS TK</p>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -47,17 +75,17 @@ export default function Sidebar() {
             <UserCircle size={24} />
           </div>
           <div className="overflow-hidden">
-            <p className="text-xs font-black text-emerald-900 truncate">Alex Mahasiswa</p>
+            <p className="text-xs font-black text-emerald-900 truncate">{userName}</p>
             <p className="text-[10px] font-medium text-emerald-600 truncate">Mahasiswa</p>
           </div>
         </div>
-        <Link
-          to="/"
-          className="flex items-center gap-3 px-4 py-3 rounded-xl text-red-500 hover:bg-red-50 transition-colors group"
+        <button
+          onClick={handleLogout}
+          className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-red-500 hover:bg-red-50 transition-colors group"
         >
           <LogOut size={20} />
           <span className="font-bold text-sm">Logout</span>
-        </Link>
+        </button>
       </div>
     </aside>
   );
