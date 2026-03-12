@@ -1,6 +1,7 @@
 import { ChevronRight, Medal, FileText, Link as LinkIcon, Paperclip, ExternalLink } from "lucide-react";
 import { useEffect, useState } from "react";
 import logo from "../image/logobpjss.png";
+
 interface Report {
   id: number;
   date: string;
@@ -41,12 +42,15 @@ export default function Dashboard() {
     }
   }, []);
 
- return (
-    <div className="flex flex-col h-full min-h-screen">
-      {/* HEADER NAVBAR BARU */}
-      <header className="h-16 bg-white border-b border-emerald-100 flex items-center justify-between px-6 lg:px-8 sticky top-0 z-10 shrink-0 lg:pl-8 pl-16">
-        {/* Bagian Kiri: Logo dan Teks */}
-        <div className="flex items-center gap-3">
+  return (
+    // Menggunakan min-h-full agar navbar punya jalur untuk sticky saat di-scroll
+    <div className="flex flex-col min-h-full bg-emerald-50/20">
+      
+      {/* HEADER NAVBAR (Sticky & Z-30) */}
+      <header className="h-16 bg-white border-b border-emerald-100 flex items-center justify-between lg:justify-end px-6 lg:px-8 sticky top-0 z-30 shrink-0 lg:pl-8 pl-16 shadow-sm">
+        
+        {/* Bagian Kiri: Logo dan Teks (HANYA MUNCUL DI HP) */}
+        <div className="flex lg:hidden items-center gap-3">
           <div className="w-9 h-9 bg-white rounded-lg flex items-center justify-center border border-emerald-50 shrink-0 p-0.5">
             <img 
               src={logo} 
@@ -71,17 +75,16 @@ export default function Dashboard() {
         </div>
       </header>
 
-      <div className="p-8 space-y-8 max-w-7xl mx-auto w-full">
-        {/* TITLE */}
+      {/* Konten Utama */}
+      <div className="p-6 lg:p-8 space-y-6 lg:space-y-8 max-w-7xl mx-auto w-full pb-20">
         <div>
-          <h1 className="text-3xl font-black text-emerald-950">
-            Welcome back, {userName ? userName.split(' ')[0] : 'Alex'}!
+          <h1 className="text-2xl lg:text-3xl font-black text-emerald-950">
+            Welcome back, {userName ? userName.split(' ')[0] : 'Lauren'}!
           </h1>
-          <p className="text-emerald-700/60 mt-1">Here's what's happening with your projects today.</p>
+          <p className="text-emerald-700/60 mt-1 text-sm lg:text-base">Here's what's happening with your projects today.</p>
         </div>
 
-        {/* CARDS */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
           <div className="bg-white p-6 rounded-xl border border-emerald-100 shadow-sm hover:shadow-md transition-shadow">
             <div className="flex items-center justify-between mb-4">
               <div className="p-2 bg-emerald-50 text-emerald-600 rounded-lg">
@@ -103,10 +106,9 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* TABLE */}
         <div className="bg-white border border-emerald-100 rounded-xl shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="w-full text-left">
+            <table className="w-full text-left min-w-[600px]">
               <thead>
                 <tr className="bg-emerald-50/50 border-b border-emerald-100">
                   <th className="px-6 py-4 text-xs font-bold uppercase text-emerald-700/70">Date</th>
@@ -133,10 +135,10 @@ export default function Dashboard() {
                 ) : (
                   reports.map((row) => (
                     <tr key={row.id} className="hover:bg-emerald-50/30 transition-colors">
-                      <td className="px-6 py-4 text-sm font-medium text-emerald-900">{row.date}</td>
+                      <td className="px-6 py-4 text-sm font-medium text-emerald-900 whitespace-nowrap">{row.date}</td>
                       <td className="px-6 py-4 text-sm text-emerald-800">{row.activity_type}</td>
                       <td className="px-6 py-4 text-sm text-emerald-700/70">
-                        <div className="max-w-[220px] truncate" title={row.description}>
+                        <div className="max-w-[150px] lg:max-w-[220px] truncate" title={row.description}>
                           {row.description}
                         </div>
                       </td>
@@ -151,8 +153,8 @@ export default function Dashboard() {
                             {row.evidence_type === "link" && <LinkIcon size={14} />}
                             {row.evidence_type === "file" && <Paperclip size={14} />}
                             {row.evidence_type === "doc" && <FileText size={14} />}
-                            {row.evidence_text}
-                            <ExternalLink size={10} className="ml-0.5 opacity-50" />
+                            <span className="truncate max-w-[100px] inline-block">{row.evidence_text}</span>
+                            <ExternalLink size={10} className="ml-0.5 opacity-50 shrink-0" />
                           </a>
                         ) : (
                           <span className="text-emerald-400 italic">No link provided</span>
@@ -168,12 +170,11 @@ export default function Dashboard() {
             </table>
           </div>
 
-          {/* FOOTER */}
-          <div className="px-6 py-4 border-t border-emerald-100 text-sm text-emerald-700/60 flex justify-between items-center bg-emerald-50/10">
+          <div className="px-4 lg:px-6 py-4 border-t border-emerald-100 text-xs lg:text-sm text-emerald-700/60 flex flex-col sm:flex-row justify-between items-center gap-4 bg-emerald-50/10">
             <span>Showing {reports.length} entries</span>
-            <div className="flex gap-2">
-               <button className="px-3 py-1 rounded border border-emerald-200 hover:bg-emerald-50 text-emerald-700 transition-colors">Previous</button>
-               <button className="px-3 py-1 rounded border border-emerald-200 hover:bg-emerald-50 text-emerald-700 transition-colors font-bold bg-emerald-50">Next</button>
+            <div className="flex gap-2 w-full sm:w-auto">
+               <button className="flex-1 sm:flex-none px-3 py-1.5 rounded border border-emerald-200 hover:bg-emerald-50 text-emerald-700 transition-colors text-center">Previous</button>
+               <button className="flex-1 sm:flex-none px-3 py-1.5 rounded border border-emerald-200 hover:bg-emerald-50 text-emerald-700 transition-colors font-bold bg-emerald-50 text-center">Next</button>
             </div>
           </div>
         </div>

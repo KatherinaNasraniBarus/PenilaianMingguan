@@ -13,7 +13,6 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { useNavigate } from "react-router-dom";
-// Import logo sesuai kode teman Anda
 import logo from "../image/logobpjss.png";
 
 export default function SubmitReport() {
@@ -143,11 +142,14 @@ export default function SubmitReport() {
   };
 
   return (
-    <div className="flex flex-col h-full bg-emerald-50/20 min-h-screen">
-      {/* DESAIN HEADER BARU DARI TEMAN ANDA */}
-      <header className="h-16 bg-white/80 backdrop-blur-md border-b border-emerald-100 flex items-center justify-between px-6 lg:px-8 sticky top-0 z-20 shrink-0 lg:pl-8 pl-16">
-        {/* Bagian Kiri: Logo dan Teks */}
-        <div className="flex items-center gap-3">
+    // min-h-full agar sticky berfungsi dengan benar saat discroll
+    <div className="flex flex-col min-h-full bg-emerald-50/20">
+      
+      {/* HEADER NAVBAR (Sticky & Z-30) */}
+      <header className="h-16 bg-white/80 backdrop-blur-md border-b border-emerald-100 flex items-center justify-between lg:justify-end px-6 lg:px-8 sticky top-0 z-30 shrink-0 lg:pl-8 pl-16">
+        
+        {/* Bagian Kiri: Logo dan Teks (HANYA MUNCUL DI HP, HILANG DI LAPTOP) */}
+        <div className="flex lg:hidden items-center gap-3">
           <div className="w-9 h-9 bg-white rounded-lg flex items-center justify-center border border-emerald-50 shrink-0 p-0.5">
             <img 
               src={logo} 
@@ -172,7 +174,8 @@ export default function SubmitReport() {
         </div>
       </header>
 
-      <main className="flex-1 p-4 md:p-8 max-w-4xl mx-auto w-full">
+      {/* Konten Utama */}
+      <main className="flex-1 p-6 md:p-8 max-w-4xl mx-auto w-full pb-20">
         <motion.div 
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -227,6 +230,7 @@ export default function SubmitReport() {
               <motion.div 
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
                 className="mb-8 p-4 bg-red-50 border-l-4 border-red-400 rounded-r-lg flex items-start gap-3 text-red-800 shadow-sm"
               >
                 <AlertCircle size={20} className="text-red-500 shrink-0 mt-0.5" />
@@ -316,7 +320,7 @@ export default function SubmitReport() {
                       disabled={submitted || isSubmitting}
                       className={`w-full border rounded-xl px-4 py-3 focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none transition-all duration-200 ${
                         errors[item.name] ? "border-red-300 bg-red-50" : "border-emerald-100 bg-emerald-50/20"
-                      } disabled:bg-slate-100 disabled:text-slate-500`}
+                      } disabled:bg-slate-100 disabled:text-slate-500 cursor-text`}
                     />
                     {errors[item.name] && (
                       <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-red-500 text-xs font-medium mt-1 ml-1">{errors[item.name]}</motion.p>
@@ -326,7 +330,6 @@ export default function SubmitReport() {
               </div>
             </section>
 
-            {/* LINK DRIVE */}
             <section className="bg-white p-8 rounded-2xl border border-emerald-100 shadow-sm hover:shadow-md transition-shadow duration-300">
               <div className="flex items-center gap-3 mb-6">
                 <div className="p-2 bg-emerald-50 rounded-lg text-emerald-600">
@@ -348,7 +351,7 @@ export default function SubmitReport() {
                   placeholder="https://drive.google.com/..."
                   className={`w-full border rounded-xl px-4 py-3 focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none transition-all duration-200 ${
                     errors.drive ? "border-red-300 bg-red-50" : "border-emerald-100 bg-emerald-50/20"
-                  } disabled:bg-slate-100 disabled:text-slate-500`}
+                  } disabled:bg-slate-100 disabled:text-slate-500 cursor-text`}
                 />
                 {errors.drive && (
                   <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-red-500 text-xs font-medium mt-1 ml-1">{errors.drive}</motion.p>
