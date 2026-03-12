@@ -1,4 +1,5 @@
-import { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   ChevronRight,
   ChevronDown,
@@ -26,9 +27,6 @@ interface Student {
     administrasi: number;
   };
 }
-
-// Kosong — siap diisi backend
-const initialStudents: Student[] = [];
 
 const WEEKS = ["Minggu 1", "Minggu 2", "Minggu 3", "Minggu 4", "Minggu 5", "Minggu 6"];
 
@@ -70,10 +68,37 @@ function ScoreInput({
 }
 
 export default function MentorDashboard() {
-  const [students, setStudents] = useState<Student[]>(initialStudents);
+  const navigate = useNavigate();
+  const [students, setStudents] = useState<Student[]>([]);
+  const [mentorName, setMentorName] = useState("");
   const [selectedWeek, setSelectedWeek] = useState("Minggu 1");
   const [statusFilter, setStatusFilter] = useState<"semua" | "sudah" | "belum">("semua");
   const [expandedRow, setExpandedRow] = useState<number | null>(null);
+
+  useEffect(() => {
+    // 1. Cek sesi login mentor
+    const mentorDataStr = localStorage.getItem("mentor_data");
+    if (!mentorDataStr) {
+      navigate("/mentor-login");
+      return;
+    }
+
+    const mentor = JSON.parse(mentorDataStr);
+    
+    // Ambil kata pertama untuk sapaan
+    const firstName = mentor.nama.split(" ")[0];
+    setMentorName(firstName);
+
+    // 2. Tarik data mahasiswa dari API XAMPP
+    fetch(`http://localhost/api-penilaian/get_mahasiswa_by_mentor.php?mentor_id=${mentor.id}`)
+      .then(res => res.json())
+      .then(data => {
+        if (data.status === "success") {
+          setStudents(data.data);
+        }
+      })
+      .catch(err => console.error("Error fetching data:", err));
+  }, [navigate]);
 
   const sudahCount = students.filter((s) => s.status === "sudah").length;
   const belumCount = students.filter((s) => s.status === "belum").length;
@@ -95,8 +120,6 @@ export default function MentorDashboard() {
 
   return (
     <div className="flex flex-col h-full bg-emerald-50/20 min-h-screen">
-
-      {/* HEADER */}
       <header className="h-16 bg-white border-b border-emerald-100 flex items-center justify-between px-8 sticky top-0 z-10 shrink-0">
         <div className="flex items-center gap-2">
           <span className="text-sm font-medium text-emerald-700/70">Mentor Portal</span>
@@ -106,20 +129,16 @@ export default function MentorDashboard() {
       </header>
 
       <div className="p-8 space-y-8 max-w-7xl mx-auto w-full">
-
-        {/* TITLE */}
         <div>
-          <h1 className="text-3xl font-black text-emerald-950">
-            Welcome back, Budi!
+          <h1 className="text-3xl font-black text-emerald-950 capitalize">
+            Welcome back, {mentorName.toLowerCase()}!
           </h1>
           <p className="text-emerald-700/60 mt-1">
             Here's the latest update on your internship participants today.
           </p>
         </div>
 
-        {/* STAT CARDS */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-
           <div className="bg-white p-6 rounded-xl border border-emerald-100 shadow-sm hover:shadow-md transition-shadow">
             <div className="flex items-center justify-between mb-4">
               <div className="p-2 bg-emerald-50 text-emerald-600 rounded-lg">
@@ -149,13 +168,9 @@ export default function MentorDashboard() {
             <p className="text-emerald-700/60 text-sm font-medium">Belum Lapor</p>
             <h3 className="text-2xl font-black text-red-500">{belumCount}</h3>
           </div>
-
         </div>
 
-        {/* TABLE */}
         <div className="bg-white border border-emerald-100 rounded-xl shadow-sm overflow-hidden">
-
-          {/* TABLE TOOLBAR */}
           <div className="px-6 py-4 border-b border-emerald-100 flex items-center gap-3 bg-emerald-50/10">
             <div className="relative">
               <select
@@ -191,7 +206,6 @@ export default function MentorDashboard() {
 
           <div className="overflow-x-auto">
             <table className="w-full text-left">
-
               <thead>
                 <tr className="bg-emerald-50/50 border-b border-emerald-100">
                   <th className="px-6 py-4 text-xs font-bold uppercase text-emerald-700/70">Mahasiswa</th>
@@ -206,10 +220,8 @@ export default function MentorDashboard() {
 
               <tbody className="divide-y divide-emerald-50">
                 {filtered.map((s) => (
-                  <>
-                    {/* MAIN ROW */}
+                  <React.Fragment key={s.id}>
                     <tr
-                      key={s.id}
                       onClick={() => toggleRow(s.id)}
                       className={`transition-colors cursor-pointer ${
                         expandedRow === s.id
@@ -282,9 +294,8 @@ export default function MentorDashboard() {
                       </td>
                     </tr>
 
-                    {/* ACCORDION */}
                     {expandedRow === s.id && (
-                      <tr key={`d-${s.id}`} className="bg-emerald-50/20">
+                      <tr className="bg-emerald-50/20">
                         <td colSpan={7} className="px-8 py-4 border-b border-emerald-50">
                           <p className="text-xs font-bold uppercase text-emerald-700/50 mb-3">Detail Aktivitas</p>
                           <div className="flex items-start gap-8">
@@ -300,7 +311,7 @@ export default function MentorDashboard() {
                         </td>
                       </tr>
                     )}
-                  </>
+                  </React.Fragment>
                 ))}
 
                 {filtered.length === 0 && (
@@ -316,15 +327,12 @@ export default function MentorDashboard() {
                   </tr>
                 )}
               </tbody>
-
             </table>
           </div>
 
-          {/* FOOTER */}
           <div className="px-6 py-4 border-t border-emerald-100 text-sm text-emerald-700/60 flex justify-between items-center bg-emerald-50/10">
             <span>{filtered.length} dari {students.length} mahasiswa · {selectedWeek}</span>
           </div>
-
         </div>
       </div>
     </div>
