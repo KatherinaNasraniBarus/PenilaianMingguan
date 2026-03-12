@@ -1,6 +1,6 @@
 import { ChevronRight, Medal, FileText, Link as LinkIcon, Paperclip, ExternalLink } from "lucide-react";
 import { useEffect, useState } from "react";
-
+import logo from "../image/logobpjss.png";
 interface Report {
   id: number;
   date: string;
@@ -41,14 +41,33 @@ export default function Dashboard() {
     }
   }, []);
 
-  return (
-    <div className="flex flex-col h-full bg-emerald-50/20 min-h-screen">
-      {/* HEADER */}
-      <header className="h-16 bg-white border-b border-emerald-100 flex items-center justify-between px-8 sticky top-0 z-10 shrink-0">
+ return (
+    <div className="flex flex-col h-full min-h-screen">
+      {/* HEADER NAVBAR BARU */}
+      <header className="h-16 bg-white border-b border-emerald-100 flex items-center justify-between px-6 lg:px-8 sticky top-0 z-10 shrink-0 lg:pl-8 pl-16">
+        {/* Bagian Kiri: Logo dan Teks */}
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 bg-white rounded-lg flex items-center justify-center border border-emerald-50 shrink-0 p-0.5">
+            <img 
+              src={logo} 
+              alt="Logo BPJS TK" 
+              className="w-full h-full object-contain" 
+            />
+          </div>
+          <div className="flex flex-col">
+            <h1 className="text-xl font-black text-emerald-950 tracking-tighter leading-none">SATU</h1>
+            <div className="flex items-center gap-1 mt-0.5">
+              <div className="h-[2px] w-2 bg-emerald-500 rounded-full"></div>
+              <p className="text-[8px] font-black text-emerald-600 tracking-[0.2em] uppercase">BPJS TK</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Bagian Kanan: Breadcrumb */}
         <div className="flex items-center gap-2">
-          <span className="text-sm font-medium text-emerald-700/70">Student Portal</span>
-          <ChevronRight size={16} className="text-emerald-200" />
-          <span className="text-sm font-bold text-emerald-900">Overview</span>
+          <span className="text-sm font-medium text-emerald-700/70 hidden sm:inline">Student Portal</span>
+          <ChevronRight size={16} className="text-emerald-200 hidden sm:inline" />
+          <span className="text-sm font-bold text-emerald-900 hidden sm:inline">Overview</span>
         </div>
       </header>
 

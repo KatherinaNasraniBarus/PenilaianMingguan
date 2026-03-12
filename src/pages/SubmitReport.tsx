@@ -11,6 +11,8 @@ import {
   Timer
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
+// 1. Tambahkan import logo di sini
+import logo from "../image/logobpjss.png";
 
 export default function SubmitReport() {
   const [submitted, setSubmitted] = useState(false);
@@ -39,6 +41,7 @@ export default function SubmitReport() {
   const hour = currentTime.getHours();
   const minute = currentTime.getMinutes();
 
+  // Deadline: Tuesday (2) at 23:59
   const passedDeadline =
     day > 2 || (day === 2 && (hour > 23 || (hour === 23 && minute > 59)));
 
@@ -75,11 +78,31 @@ export default function SubmitReport() {
 
   return (
     <div className="flex flex-col h-full bg-emerald-50/20 min-h-screen">
-      <header className="h-16 bg-white/80 backdrop-blur-md border-b border-emerald-100 flex items-center justify-between px-8 sticky top-0 z-20 shrink-0">
+      {/* 2. HEADER SAMA SEPERTI DI DASHBOARD */}
+      <header className="h-16 bg-white/80 backdrop-blur-md border-b border-emerald-100 flex items-center justify-between px-6 lg:px-8 sticky top-0 z-20 shrink-0 lg:pl-8 pl-16">
+        {/* Bagian Kiri: Logo dan Teks */}
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 bg-white rounded-lg flex items-center justify-center border border-emerald-50 shrink-0 p-0.5">
+            <img 
+              src={logo} 
+              alt="Logo BPJS TK" 
+              className="w-full h-full object-contain" 
+            />
+          </div>
+          <div className="flex flex-col">
+            <h1 className="text-xl font-black text-emerald-950 tracking-tighter leading-none">SATU</h1>
+            <div className="flex items-center gap-1 mt-0.5">
+              <div className="h-[2px] w-2 bg-emerald-500 rounded-full"></div>
+              <p className="text-[8px] font-black text-emerald-600 tracking-[0.2em] uppercase">BPJS TK</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Bagian Kanan: Breadcrumb */}
         <div className="flex items-center gap-2">
-          <span className="text-sm font-medium text-emerald-600">Laporan</span>
-          <ChevronRight size={14} className="text-emerald-200" />
-          <span className="text-sm font-bold text-emerald-900">Laporan Mingguan</span>
+          <span className="text-sm font-medium text-emerald-700/70 hidden sm:inline">Laporan</span>
+          <ChevronRight size={14} className="text-emerald-200 hidden sm:inline" />
+          <span className="text-sm font-bold text-emerald-900 hidden sm:inline">Laporan Mingguan</span>
         </div>
       </header>
 
@@ -92,7 +115,8 @@ export default function SubmitReport() {
           <h2 className="text-3xl font-bold text-emerald-950 mb-2 tracking-tight">
             Laporan Mingguan Mahasiswa
           </h2>
-
+          
+          {/* ENHANCED DEADLINE UI */}
           <div className="flex flex-wrap items-center gap-3 mb-8 mt-4">
             <div className="flex items-center gap-2 px-3 py-1.5 bg-white border border-emerald-100 rounded-full shadow-sm">
               <Calendar size={14} className="text-emerald-500" />
@@ -152,6 +176,7 @@ export default function SubmitReport() {
           </AnimatePresence>
 
           <form className="space-y-8" onSubmit={handleSubmit}>
+            {/* NAMA */}
             <section className="bg-white p-8 rounded-2xl border border-emerald-100 shadow-sm hover:shadow-md transition-shadow duration-300">
               <div className="flex items-center gap-3 mb-6">
                 <div className="p-2 bg-emerald-50 rounded-lg text-emerald-600">
@@ -180,6 +205,7 @@ export default function SubmitReport() {
               </div>
             </section>
 
+            {/* AKTIVITAS */}
             <section className="bg-white p-8 rounded-2xl border border-emerald-100 shadow-sm hover:shadow-md transition-shadow duration-300">
               <div className="flex items-center gap-3 mb-6">
                 <div className="p-2 bg-emerald-50 rounded-lg text-emerald-600">
