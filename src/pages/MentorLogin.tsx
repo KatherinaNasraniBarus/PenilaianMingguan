@@ -14,7 +14,7 @@ export default function MentorLogin() {
     // Simulate login
     setTimeout(() => {
       setLoading(false);
-      navigate("/dashboard");
+      navigate("/mentor/dashboard");
     }, 1000);
   };
 
