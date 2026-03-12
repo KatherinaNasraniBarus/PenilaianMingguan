@@ -8,14 +8,21 @@ import {
   AlertCircle, 
   Clock,
   Calendar,
-  Timer
+  Timer,
+  Loader2
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
-// 1. Tambahkan import logo di sini
+import { useNavigate } from "react-router-dom";
+// Import logo sesuai kode teman Anda
 import logo from "../image/logobpjss.png";
 
 export default function SubmitReport() {
+  const navigate = useNavigate();
   const [submitted, setSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [studentData, setStudentData] = useState<{ nim: string; nama: string } | null>(null);
+  const [submitError, setSubmitError] = useState("");
+  
   const [formData, setFormData] = useState({
     nama: "",
     seminar: "",
@@ -31,6 +38,21 @@ export default function SubmitReport() {
 
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [currentTime, setCurrentTime] = useState(new Date());
+
+  // LOGIKA LOGIN: Ambil data mahasiswa dari localStorage
+  useEffect(() => {
+    const storedNim = localStorage.getItem("userNim");
+    const storedName = localStorage.getItem("userName");
+
+    if (storedNim && storedName) {
+      setStudentData({ nim: storedNim, nama: storedName });
+      // Otomatis isi nama di form berdasarkan data login
+      setFormData(prev => ({ ...prev, nama: storedName }));
+    } else {
+      // Jika belum login, tendang ke halaman awal
+      navigate("/");
+    }
+  }, [navigate]);
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 60000);
@@ -57,8 +79,10 @@ export default function SubmitReport() {
     });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // LOGIKA API: Pengiriman data ke XAMPP
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setSubmitError("");
 
     let newErrors: Record<string, string> = {};
 
@@ -73,12 +97,54 @@ export default function SubmitReport() {
       return;
     }
 
-    setSubmitted(true);
+    if (!studentData?.nim) {
+      setSubmitError("Sesi login Anda tidak valid. Silakan login ulang.");
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    // Siapkan data untuk dikirim ke API
+    const payload = {
+      nim: studentData.nim,
+      minggu: "Minggu 1", 
+      kehadiran_seminar: formData.seminar,
+      akuisisi_pu: formData.pu,
+      akuisisi_bpu: formData.bpu,
+      jumlah_sosialisasi: formData.sosialisasi,
+      video_viralisasi: formData.video,
+      administrasi: formData.administrasi,
+      kunjungan_pu: formData.kunjunganPu,
+      kunjungan_bpu: formData.kunjunganBpu,
+      link_drive: formData.drive
+    };
+
+    try {
+      const response = await fetch("http://localhost/api-penilaian/submit_laporan.php", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const result = await response.json();
+
+      if (response.ok && result.status === "success") {
+        setSubmitted(true);
+      } else {
+        setSubmitError(result.message || "Gagal mengirim laporan. Coba lagi nanti.");
+      }
+    } catch (error) {
+      setSubmitError("Terjadi kesalahan koneksi ke server. Pastikan XAMPP menyala.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
     <div className="flex flex-col h-full bg-emerald-50/20 min-h-screen">
-      {/* 2. HEADER SAMA SEPERTI DI DASHBOARD */}
+      {/* DESAIN HEADER BARU DARI TEMAN ANDA */}
       <header className="h-16 bg-white/80 backdrop-blur-md border-b border-emerald-100 flex items-center justify-between px-6 lg:px-8 sticky top-0 z-20 shrink-0 lg:pl-8 pl-16">
         {/* Bagian Kiri: Logo dan Teks */}
         <div className="flex items-center gap-3">
@@ -115,12 +181,11 @@ export default function SubmitReport() {
           <h2 className="text-3xl font-bold text-emerald-950 mb-2 tracking-tight">
             Laporan Mingguan Mahasiswa
           </h2>
-          
-          {/* ENHANCED DEADLINE UI */}
+
           <div className="flex flex-wrap items-center gap-3 mb-8 mt-4">
             <div className="flex items-center gap-2 px-3 py-1.5 bg-white border border-emerald-100 rounded-full shadow-sm">
               <Calendar size={14} className="text-emerald-500" />
-              <span className="text-xs font-semibold text-emerald-600 uppercase tracking-wider">Periode Mingguan</span>
+              <span className="text-xs font-semibold text-emerald-600 uppercase tracking-wider">Minggu 1</span>
             </div>
             
             <div className={`flex items-center gap-2 px-4 py-1.5 rounded-full border shadow-sm transition-colors duration-300 ${
@@ -158,6 +223,17 @@ export default function SubmitReport() {
               </motion.div>
             )}
 
+            {submitError && (
+              <motion.div 
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                className="mb-8 p-4 bg-red-50 border-l-4 border-red-400 rounded-r-lg flex items-start gap-3 text-red-800 shadow-sm"
+              >
+                <AlertCircle size={20} className="text-red-500 shrink-0 mt-0.5" />
+                <p className="font-bold text-sm">{submitError}</p>
+              </motion.div>
+            )}
+
             {submitted && (
               <motion.div 
                 initial={{ opacity: 0, scale: 0.95 }}
@@ -176,7 +252,6 @@ export default function SubmitReport() {
           </AnimatePresence>
 
           <form className="space-y-8" onSubmit={handleSubmit}>
-            {/* NAMA */}
             <section className="bg-white p-8 rounded-2xl border border-emerald-100 shadow-sm hover:shadow-md transition-shadow duration-300">
               <div className="flex items-center gap-3 mb-6">
                 <div className="p-2 bg-emerald-50 rounded-lg text-emerald-600">
@@ -193,19 +268,22 @@ export default function SubmitReport() {
                   type="text"
                   name="nama"
                   value={formData.nama}
+                  readOnly 
                   onChange={handleChange}
                   placeholder="Masukkan nama sesuai KTM"
                   className={`w-full rounded-xl border px-4 py-3 focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none transition-all duration-200 ${
-                    errors.nama ? "border-red-300 bg-red-50" : "border-emerald-100 bg-emerald-50/20"
+                    errors.nama ? "border-red-300 bg-red-50" : "border-emerald-100 bg-emerald-50/50 cursor-not-allowed text-emerald-900 font-bold"
                   }`}
                 />
+                <p className="text-[10px] text-emerald-500 mt-1 italic ml-1">
+                  *Nama terisi otomatis berdasarkan data login Anda
+                </p>
                 {errors.nama && (
                   <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-red-500 text-xs font-medium mt-1 ml-1">{errors.nama}</motion.p>
                 )}
               </div>
             </section>
 
-            {/* AKTIVITAS */}
             <section className="bg-white p-8 rounded-2xl border border-emerald-100 shadow-sm hover:shadow-md transition-shadow duration-300">
               <div className="flex items-center gap-3 mb-6">
                 <div className="p-2 bg-emerald-50 rounded-lg text-emerald-600">
@@ -235,9 +313,10 @@ export default function SubmitReport() {
                       name={item.name}
                       value={formData[item.name as keyof typeof formData]}
                       onChange={handleChange}
+                      disabled={submitted || isSubmitting}
                       className={`w-full border rounded-xl px-4 py-3 focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none transition-all duration-200 ${
                         errors[item.name] ? "border-red-300 bg-red-50" : "border-emerald-100 bg-emerald-50/20"
-                      }`}
+                      } disabled:bg-slate-100 disabled:text-slate-500`}
                     />
                     {errors[item.name] && (
                       <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-red-500 text-xs font-medium mt-1 ml-1">{errors[item.name]}</motion.p>
@@ -265,10 +344,11 @@ export default function SubmitReport() {
                   name="drive"
                   value={formData.drive}
                   onChange={handleChange}
+                  disabled={submitted || isSubmitting}
                   placeholder="https://drive.google.com/..."
                   className={`w-full border rounded-xl px-4 py-3 focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none transition-all duration-200 ${
                     errors.drive ? "border-red-300 bg-red-50" : "border-emerald-100 bg-emerald-50/20"
-                  }`}
+                  } disabled:bg-slate-100 disabled:text-slate-500`}
                 />
                 {errors.drive && (
                   <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-red-500 text-xs font-medium mt-1 ml-1">{errors.drive}</motion.p>
@@ -282,17 +362,25 @@ export default function SubmitReport() {
             {/* BUTTON */}
             <div className="flex justify-end pt-6 pb-16">
               <motion.button
-                whileHover={!submitted ? { scale: 1.02 } : {}}
-                whileTap={!submitted ? { scale: 0.98 } : {}}
+                whileHover={!submitted && !isSubmitting ? { scale: 1.02 } : {}}
+                whileTap={!submitted && !isSubmitting ? { scale: 0.98 } : {}}
                 type="submit"
-                disabled={submitted}
+                disabled={submitted || isSubmitting}
                 className={`px-10 py-4 rounded-2xl text-white font-bold shadow-lg flex items-center gap-3 transition-all duration-300
                 ${submitted 
                   ? "bg-slate-300 cursor-not-allowed shadow-none" 
-                  : "bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 shadow-emerald-200"}`}
+                  : isSubmitting
+                    ? "bg-emerald-500 opacity-80 cursor-wait"
+                    : "bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 shadow-emerald-200"}`}
               >
-                {submitted ? <CheckCircle size={22} /> : <CheckCircle size={22} className="animate-pulse" />}
-                {submitted ? "Laporan Terkirim" : "Submit Laporan Sekarang"}
+                {isSubmitting ? (
+                  <Loader2 size={22} className="animate-spin" />
+                ) : submitted ? (
+                  <CheckCircle size={22} />
+                ) : (
+                  <CheckCircle size={22} className="animate-pulse" />
+                )}
+                {isSubmitting ? "Mengirim Data..." : submitted ? "Laporan Terkirim" : "Submit Laporan Sekarang"}
               </motion.button>
             </div>
           </form>
