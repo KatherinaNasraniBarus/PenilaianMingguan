@@ -21,18 +21,69 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Ambil data dari ingatan browser
     const nim = localStorage.getItem("userNim");
     const name = localStorage.getItem("userName");
+    
     if (name) setUserName(name);
 
     if (nim) {
-      fetch(`/api/reports/${nim}`)
+      // Panggil API PHP
+      fetch(`http://localhost/api-penilaian/get_dashboard_mahasiswa.php?nim=${nim}&minggu=Minggu%201`)
         .then(res => res.json())
         .then(result => {
           if (result.status === "success") {
-            setReports(result.data.reports);
-            setTotalPoints(result.data.totalPoints);
-            setReportCount(result.data.reportCount);
+            const dbData = result.data;
+            
+            // Mengubah format tanggal dari XAMPP (Y-m-d H:i:s) menjadi format Indonesia yang cantik
+            let formattedDate = "Minggu 1";
+            if (dbData.tanggal_submit) {
+              // Ganti spasi dengan 'T' agar aman di semua browser
+              const dateObj = new Date(dbData.tanggal_submit.replace(" ", "T"));
+              formattedDate = dateObj.toLocaleDateString("id-ID", {
+                day: "numeric",
+                month: "short",
+                year: "numeric",
+                hour: "2-digit",
+                minute: "2-digit"
+              }).replace(/\./g, ':'); // Ubah pemisah jam dari titik ke titik dua
+            }
+            
+            const activityMap = [
+              { key: "kehadiran_seminar", label: "Kehadiran Seminar" },
+              { key: "akuisisi_pu", label: "Akuisisi PU" },
+              { key: "akuisisi_bpu", label: "Akuisisi BPU" },
+              { key: "jumlah_sosialisasi", label: "Jumlah Sosialisasi" },
+              { key: "video_viralisasi", label: "Video Viralisasi" },
+              { key: "administrasi", label: "Administrasi dan Laporan" },
+              { key: "kunjungan_pu", label: "Kunjungan PU" },
+              { key: "kunjungan_bpu", label: "Kunjungan BPU" },
+            ];
+
+            let calculatedTotalPoints = 0;
+            const mappedReports: Report[] = [];
+
+            activityMap.forEach((act, index) => {
+              const count = Number(dbData[act.key as keyof typeof dbData]);
+              if (count > 0) {
+                calculatedTotalPoints += count;
+                
+                mappedReports.push({
+                  id: index + 1,
+                  date: formattedDate, // <-- Menggunakan TANGGAL ASLI di sini
+                  activity_type: act.label,
+                  description: `Melaporkan ${count} aktivitas ${act.label}`,
+                  evidence_type: "link",
+                  evidence_text: "Google Drive",
+                  evidence_link: dbData.link_drive || "",
+                  points: count,
+                });
+              }
+            });
+
+            setReports(mappedReports);
+            setTotalPoints(calculatedTotalPoints);
+            setReportCount(dbData.link_drive ? 1 : 0); 
           }
         })
         .catch(err => console.error("Failed to fetch reports:", err))
@@ -43,20 +94,13 @@ export default function Dashboard() {
   }, []);
 
   return (
-    // Menggunakan min-h-full agar navbar punya jalur untuk sticky saat di-scroll
     <div className="flex flex-col min-h-full bg-emerald-50/20">
       
-      {/* HEADER NAVBAR (Sticky & Z-30) */}
+      {/* HEADER NAVBAR */}
       <header className="h-16 bg-white border-b border-emerald-100 flex items-center justify-between lg:justify-end px-6 lg:px-8 sticky top-0 z-30 shrink-0 lg:pl-8 pl-16 shadow-sm">
-        
-        {/* Bagian Kiri: Logo dan Teks (HANYA MUNCUL DI HP) */}
         <div className="flex lg:hidden items-center gap-3">
           <div className="w-9 h-9 bg-white rounded-lg flex items-center justify-center border border-emerald-50 shrink-0 p-0.5">
-            <img 
-              src={logo} 
-              alt="Logo BPJS TK" 
-              className="w-full h-full object-contain" 
-            />
+            <img src={logo} alt="Logo BPJS TK" className="w-full h-full object-contain" />
           </div>
           <div className="flex flex-col">
             <h1 className="text-xl font-black text-emerald-950 tracking-tighter leading-none">SATU</h1>
@@ -67,7 +111,6 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Bagian Kanan: Breadcrumb */}
         <div className="flex items-center gap-2">
           <span className="text-sm font-medium text-emerald-700/70 hidden sm:inline">Student Portal</span>
           <ChevronRight size={16} className="text-emerald-200 hidden sm:inline" />
@@ -78,8 +121,8 @@ export default function Dashboard() {
       {/* Konten Utama */}
       <div className="p-6 lg:p-8 space-y-6 lg:space-y-8 max-w-7xl mx-auto w-full pb-20">
         <div>
-          <h1 className="text-2xl lg:text-3xl font-black text-emerald-950">
-            Welcome back, {userName ? userName.split(' ')[0] : 'Lauren'}!
+          <h1 className="text-2xl lg:text-3xl font-black text-emerald-950 capitalize">
+            Welcome back, {userName ? userName.split(' ')[0].toLowerCase() : 'Student'}!
           </h1>
           <p className="text-emerald-700/60 mt-1 text-sm lg:text-base">Here's what's happening with your projects today.</p>
         </div>
@@ -91,7 +134,7 @@ export default function Dashboard() {
                 <Medal size={24} />
               </div>
             </div>
-            <p className="text-emerald-700/60 text-sm font-medium">Total Points</p>
+            <p className="text-emerald-700/60 text-sm font-medium">Total Activity Points</p>
             <h3 className="text-2xl font-black text-emerald-900">{totalPoints}</h3>
           </div>
 
@@ -101,7 +144,7 @@ export default function Dashboard() {
                 <FileText size={24} />
               </div>
             </div>
-            <p className="text-emerald-700/60 text-sm font-medium">Reports Submitted</p>
+            <p className="text-emerald-700/60 text-sm font-medium">Weekly Reports Submitted</p>
             <h3 className="text-2xl font-black text-emerald-900">{reportCount}</h3>
           </div>
         </div>
@@ -115,7 +158,7 @@ export default function Dashboard() {
                   <th className="px-6 py-4 text-xs font-bold uppercase text-emerald-700/70">Activity Type</th>
                   <th className="px-6 py-4 text-xs font-bold uppercase text-emerald-700/70">Description</th>
                   <th className="px-6 py-4 text-xs font-bold uppercase text-emerald-700/70">Evidence</th>
-                  <th className="px-6 py-4 text-xs font-bold uppercase text-emerald-700/70 text-right">Points</th>
+                  <th className="px-6 py-4 text-xs font-bold uppercase text-emerald-700/70 text-right">Count/Points</th>
                 </tr>
               </thead>
 
@@ -123,6 +166,9 @@ export default function Dashboard() {
                 {loading ? (
                   <tr>
                     <td colSpan={5} className="px-6 py-12 text-center text-emerald-700/60 font-medium">
+                      <div className="flex justify-center mb-2">
+                         <div className="w-6 h-6 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin" />
+                      </div>
                       Loading reports...
                     </td>
                   </tr>
@@ -136,7 +182,7 @@ export default function Dashboard() {
                   reports.map((row) => (
                     <tr key={row.id} className="hover:bg-emerald-50/30 transition-colors">
                       <td className="px-6 py-4 text-sm font-medium text-emerald-900 whitespace-nowrap">{row.date}</td>
-                      <td className="px-6 py-4 text-sm text-emerald-800">{row.activity_type}</td>
+                      <td className="px-6 py-4 text-sm text-emerald-800 font-semibold">{row.activity_type}</td>
                       <td className="px-6 py-4 text-sm text-emerald-700/70">
                         <div className="max-w-[150px] lg:max-w-[220px] truncate" title={row.description}>
                           {row.description}
@@ -145,14 +191,12 @@ export default function Dashboard() {
                       <td className="px-6 py-4 text-sm">
                         {row.evidence_link ? (
                           <a 
-                            href={row.evidence_link} 
+                            href={row.evidence_link.startsWith('http') ? row.evidence_link : `https://${row.evidence_link}`} 
                             target="_blank" 
                             rel="noopener noreferrer"
                             className="text-emerald-600 hover:text-emerald-700 flex items-center gap-1 font-medium underline underline-offset-4 decoration-emerald-200"
                           >
-                            {row.evidence_type === "link" && <LinkIcon size={14} />}
-                            {row.evidence_type === "file" && <Paperclip size={14} />}
-                            {row.evidence_type === "doc" && <FileText size={14} />}
+                            <LinkIcon size={14} />
                             <span className="truncate max-w-[100px] inline-block">{row.evidence_text}</span>
                             <ExternalLink size={10} className="ml-0.5 opacity-50 shrink-0" />
                           </a>
@@ -160,7 +204,7 @@ export default function Dashboard() {
                           <span className="text-emerald-400 italic">No link provided</span>
                         )}
                       </td>
-                      <td className="px-6 py-4 text-right font-mono font-bold text-emerald-600">
+                      <td className="px-6 py-4 text-right font-mono font-black text-emerald-600">
                         {row.points > 0 ? `+${row.points}` : row.points}
                       </td>
                     </tr>
@@ -171,10 +215,10 @@ export default function Dashboard() {
           </div>
 
           <div className="px-4 lg:px-6 py-4 border-t border-emerald-100 text-xs lg:text-sm text-emerald-700/60 flex flex-col sm:flex-row justify-between items-center gap-4 bg-emerald-50/10">
-            <span>Showing {reports.length} entries</span>
+            <span>Showing {reports.length} activity entries</span>
             <div className="flex gap-2 w-full sm:w-auto">
-               <button className="flex-1 sm:flex-none px-3 py-1.5 rounded border border-emerald-200 hover:bg-emerald-50 text-emerald-700 transition-colors text-center">Previous</button>
-               <button className="flex-1 sm:flex-none px-3 py-1.5 rounded border border-emerald-200 hover:bg-emerald-50 text-emerald-700 transition-colors font-bold bg-emerald-50 text-center">Next</button>
+               <button className="flex-1 sm:flex-none px-3 py-1.5 rounded border border-emerald-200 hover:bg-emerald-50 text-emerald-700 transition-colors text-center cursor-not-allowed opacity-50">Previous</button>
+               <button className="flex-1 sm:flex-none px-3 py-1.5 rounded border border-emerald-200 hover:bg-emerald-50 text-emerald-700 transition-colors font-bold bg-emerald-50 text-center cursor-not-allowed opacity-50">Next</button>
             </div>
           </div>
         </div>
