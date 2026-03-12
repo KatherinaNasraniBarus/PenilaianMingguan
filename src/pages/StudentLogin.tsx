@@ -12,7 +12,7 @@ export default function StudentLogin() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setErrorMessage(""); // Reset pesan error sebelum mencoba login
+    setErrorMessage("");
     
     try {
       // Menembak API PHP (Pastikan XAMPP Apache & MySQL menyala)
@@ -69,7 +69,6 @@ export default function StudentLogin() {
             <p className="text-emerald-700/60 mt-2 font-medium">Masukkan NIM dan Password Anda</p>
           </div>
 
-          {/* Menampilkan Pesan Error Dinamis */}
           <AnimatePresence>
             {errorMessage && (
               <motion.div
