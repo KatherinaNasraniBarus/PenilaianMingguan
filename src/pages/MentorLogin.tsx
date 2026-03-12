@@ -1,21 +1,46 @@
 import React, { useState } from "react";
 import { motion } from "motion/react";
-import { User, Lock, ArrowRight, ChevronLeft } from "lucide-react";
+import { User, Lock, ArrowRight, ChevronLeft, AlertCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 export default function MentorLogin() {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({ username: "", password: "" });
   const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState(""); // State baru untuk pesan error
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    // Simulate login
-    setTimeout(() => {
+    setErrorMsg("");
+
+    try {
+      // Menembak API PHP yang baru kita buat
+      const response = await fetch("http://localhost/api-penilaian/login_mentor.php", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          username: formData.username,
+          password: formData.password,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (response.ok && result.status === "success") {
+        // Jika berhasil, simpan data mentor ke localStorage
+        localStorage.setItem("mentor_data", JSON.stringify(result.data));
+        // Lempar ke dashboard
+        navigate("/mentor/dashboard");
+      } else {
+        // Jika gagal (password salah/user tidak ada), tampilkan error dari PHP
+        setErrorMsg(result.message || "Gagal login. Periksa kembali data Anda.");
+      }
+    } catch (error) {
+      setErrorMsg("Terjadi kesalahan koneksi ke server. Pastikan XAMPP menyala.");
+    } finally {
       setLoading(false);
-      navigate("/mentor/dashboard");
-    }, 1000);
+    }
   };
 
   return (
@@ -35,8 +60,16 @@ export default function MentorLogin() {
         <div className="bg-white p-10 rounded-[2.5rem] shadow-2xl shadow-emerald-100 border border-emerald-100">
           <div className="text-center mb-10">
             <h1 className="text-3xl font-black text-emerald-950">Login Mentor</h1>
-            <p className="text-emerald-700/60 mt-2 font-medium">Masukkan Nama Anda</p>
+            <p className="text-emerald-700/60 mt-2 font-medium">Masukkan Username Anda</p>
           </div>
+
+          {/* Alert Error Box */}
+          {errorMsg && (
+            <div className="mb-6 p-4 bg-red-50 border border-red-100 rounded-xl flex items-center gap-3 text-red-600">
+              <AlertCircle size={20} />
+              <p className="text-sm font-bold">{errorMsg}</p>
+            </div>
+          )}
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
@@ -48,7 +81,7 @@ export default function MentorLogin() {
                   required
                   value={formData.username}
                   onChange={(e) => setFormData({ ...formData, username: e.target.value })}
-                  placeholder="nama_mentor"
+                  placeholder="ari_ismoyo"
                   className="w-full bg-emerald-50/50 border border-emerald-100 rounded-2xl py-4 pl-12 pr-4 outline-none focus:ring-2 focus:ring-emerald-500 transition-all font-medium"
                 />
               </div>
