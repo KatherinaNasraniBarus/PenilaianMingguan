@@ -1,4 +1,4 @@
-import { ChevronRight, Medal, FileText, Link as LinkIcon, Paperclip, ExternalLink } from "lucide-react";
+import { ChevronRight, Medal, FileText, Link as LinkIcon, ExternalLink, UserCheck } from "lucide-react";
 import { useEffect, useState } from "react";
 import logo from "../image/logobpjss.png";
 
@@ -120,11 +120,23 @@ export default function Dashboard() {
 
       {/* Konten Utama */}
       <div className="p-6 lg:p-8 space-y-6 lg:space-y-8 max-w-7xl mx-auto w-full pb-20">
-        <div>
-          <h1 className="text-2xl lg:text-3xl font-black text-emerald-950 capitalize">
-            Welcome back, {userName ? userName.split(' ')[0].toLowerCase() : 'Student'}!
-          </h1>
-          <p className="text-emerald-700/60 mt-1 text-sm lg:text-base">Here's what's happening with your projects today.</p>
+        
+        {/* WELCOME SECTION & TOMBOL ABSENSI DI KIRI */}
+        <div className="flex flex-col gap-4 items-start">
+          <div>
+            <h1 className="text-2xl lg:text-3xl font-black text-emerald-950 capitalize">
+              Welcome back, {userName ? userName.split(' ')[0].toLowerCase() : 'Student'}!
+            </h1>
+            <p className="text-emerald-700/60 mt-1 text-sm lg:text-base">Pantau aktivitas dan laporan Anda.</p>
+          </div>
+          
+          <button 
+            onClick={() => {/* Tambahkan fungsi navigasi/modal absensi di sini */}}
+            className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-xl font-bold transition-all shadow-sm hover:shadow-md active:scale-95 w-full sm:w-auto justify-center"
+          >
+            <UserCheck size={20} />
+            <span>Isi Absensi</span>
+          </button>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
@@ -134,7 +146,7 @@ export default function Dashboard() {
                 <Medal size={24} />
               </div>
             </div>
-            <p className="text-emerald-700/60 text-sm font-medium">Total Activity Points</p>
+            <p className="text-emerald-700/60 text-sm font-medium">Total Points</p>
             <h3 className="text-2xl font-black text-emerald-900">{totalPoints}</h3>
           </div>
 
@@ -154,11 +166,11 @@ export default function Dashboard() {
             <table className="w-full text-left min-w-[600px]">
               <thead>
                 <tr className="bg-emerald-50/50 border-b border-emerald-100">
-                  <th className="px-6 py-4 text-xs font-bold uppercase text-emerald-700/70">Date</th>
-                  <th className="px-6 py-4 text-xs font-bold uppercase text-emerald-700/70">Activity Type</th>
-                  <th className="px-6 py-4 text-xs font-bold uppercase text-emerald-700/70">Description</th>
-                  <th className="px-6 py-4 text-xs font-bold uppercase text-emerald-700/70">Evidence</th>
-                  <th className="px-6 py-4 text-xs font-bold uppercase text-emerald-700/70 text-right">Count/Points</th>
+                  <th className="px-6 py-4 text-xs font-bold uppercase text-emerald-700/70">Tanggal</th>
+                  <th className="px-6 py-4 text-xs font-bold uppercase text-emerald-700/70">Jenis Aktivitas</th>
+                  <th className="px-6 py-4 text-xs font-bold uppercase text-emerald-700/70">Deskripsi</th>
+                  <th className="px-6 py-4 text-xs font-bold uppercase text-emerald-700/70">Link Drive</th>
+                  <th className="px-6 py-4 text-xs font-bold uppercase text-emerald-700/70 text-right">Point</th>
                 </tr>
               </thead>
 
@@ -175,7 +187,7 @@ export default function Dashboard() {
                 ) : reports.length === 0 ? (
                   <tr>
                     <td colSpan={5} className="px-6 py-12 text-center text-emerald-700/60 font-medium">
-                      No reports submitted yet.
+                      Belum ada laporan yang dikirimkan.
                     </td>
                   </tr>
                 ) : (
@@ -215,10 +227,10 @@ export default function Dashboard() {
           </div>
 
           <div className="px-4 lg:px-6 py-4 border-t border-emerald-100 text-xs lg:text-sm text-emerald-700/60 flex flex-col sm:flex-row justify-between items-center gap-4 bg-emerald-50/10">
-            <span>Showing {reports.length} activity entries</span>
+            <span>Menampilkan {reports.length} data aktivitas</span>
             <div className="flex gap-2 w-full sm:w-auto">
-               <button className="flex-1 sm:flex-none px-3 py-1.5 rounded border border-emerald-200 hover:bg-emerald-50 text-emerald-700 transition-colors text-center cursor-not-allowed opacity-50">Previous</button>
-               <button className="flex-1 sm:flex-none px-3 py-1.5 rounded border border-emerald-200 hover:bg-emerald-50 text-emerald-700 transition-colors font-bold bg-emerald-50 text-center cursor-not-allowed opacity-50">Next</button>
+               <button className="flex-1 sm:flex-none px-3 py-1.5 rounded border border-emerald-200 hover:bg-emerald-50 text-emerald-700 transition-colors text-center cursor-not-allowed opacity-50">Kembali</button>
+               <button className="flex-1 sm:flex-none px-3 py-1.5 rounded border border-emerald-200 hover:bg-emerald-50 text-emerald-700 transition-colors font-bold bg-emerald-50 text-center cursor-not-allowed opacity-50">Selanjutnya</button>
             </div>
           </div>
         </div>

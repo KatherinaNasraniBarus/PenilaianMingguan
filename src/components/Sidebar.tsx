@@ -79,7 +79,6 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
 
         {/* Menu Navigasi */}
         <nav className="flex-1 p-4 space-y-1.5 overflow-y-auto">
-          <p className="px-4 pb-2 text-xs font-bold text-emerald-400/80 uppercase tracking-wider">Menu Utama</p>
           
           {menuItems.map((item) => {
             const Icon = item.icon;

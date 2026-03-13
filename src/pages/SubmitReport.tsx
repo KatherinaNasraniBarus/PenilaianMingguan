@@ -211,21 +211,6 @@ export default function SubmitReport() {
           </div>
 
           <AnimatePresence>
-            {passedDeadline && !submitted && (
-              <motion.div 
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: "auto" }}
-                exit={{ opacity: 0, height: 0 }}
-                className="mb-8 p-4 bg-amber-50 border-l-4 border-amber-400 rounded-r-lg flex items-start gap-3 text-amber-800 shadow-sm"
-              >
-                <AlertCircle size={20} className="text-amber-500 shrink-0 mt-0.5" />
-                <div>
-                  <p className="font-bold text-sm">Deadline Minggu Ini Terlewati</p>
-                  <p className="text-xs opacity-90 mt-1">Laporan yang Anda kirimkan sekarang akan secara otomatis tercatat untuk periode minggu berikutnya.</p>
-                </div>
-              </motion.div>
-            )}
-
             {submitError && (
               <motion.div 
                 initial={{ opacity: 0, height: 0 }}
@@ -357,7 +342,7 @@ export default function SubmitReport() {
                   <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-red-500 text-xs font-medium mt-1 ml-1">{errors.drive}</motion.p>
                 )}
                 <p className="text-[10px] text-emerald-400 mt-2 italic ml-1">
-                  *Pastikan link dapat diakses oleh koordinator
+                  *Pastikan link dapat diakses oleh Mentor.
                 </p>
               </div>
             </section>
