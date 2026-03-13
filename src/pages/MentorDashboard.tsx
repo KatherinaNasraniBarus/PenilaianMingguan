@@ -9,6 +9,7 @@ import {
   CheckCircle2,
   Clock,
 } from "lucide-react";
+import logo from "../image/logobpjss.png";
 
 interface Student {
   id: number;
@@ -76,28 +77,20 @@ export default function MentorDashboard() {
   const [expandedRow, setExpandedRow] = useState<number | null>(null);
 
   useEffect(() => {
-    // 1. Cek sesi login mentor
     const mentorDataStr = localStorage.getItem("mentor_data");
     if (!mentorDataStr) {
       navigate("/mentor-login");
       return;
     }
-
     const mentor = JSON.parse(mentorDataStr);
-    
-    // Ambil kata pertama untuk sapaan
-    const firstName = mentor.nama.split(" ")[0];
-    setMentorName(firstName);
+    setMentorName(mentor.nama.split(" ")[0]);
 
-    // 2. Tarik data mahasiswa dari API XAMPP
     fetch(`http://localhost/api-penilaian/get_mahasiswa_by_mentor.php?mentor_id=${mentor.id}`)
-      .then(res => res.json())
-      .then(data => {
-        if (data.status === "success") {
-          setStudents(data.data);
-        }
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.status === "success") setStudents(data.data);
       })
-      .catch(err => console.error("Error fetching data:", err));
+      .catch((err) => console.error("Error fetching data:", err));
   }, [navigate]);
 
   const sudahCount = students.filter((s) => s.status === "sudah").length;
@@ -119,25 +112,47 @@ export default function MentorDashboard() {
     setExpandedRow((prev) => (prev === id ? null : id));
 
   return (
-    <div className="flex flex-col h-full bg-emerald-50/20 min-h-screen">
-      <header className="h-16 bg-white border-b border-emerald-100 flex items-center justify-between px-8 sticky top-0 z-10 shrink-0">
+    <div className="flex flex-col min-h-full bg-emerald-50/20">
+
+      {/* ── NAVBAR ATAS — identik dengan Dashboard.tsx mahasiswa ── */}
+      <header className="h-16 bg-white border-b border-emerald-100 flex items-center justify-between lg:justify-end px-6 lg:px-8 sticky top-0 z-30 shrink-0 lg:pl-8 pl-16 shadow-sm">
+        
+        {/* Logo SATU — hanya di mobile (lg:hidden), sama persis dengan Dashboard mahasiswa */}
+        <div className="flex lg:hidden items-center gap-3">
+          <div className="w-9 h-9 bg-white rounded-lg flex items-center justify-center border border-emerald-50 shrink-0 p-0.5">
+            <img src={logo} alt="Logo BPJS TK" className="w-full h-full object-contain" />
+          </div>
+          <div className="flex flex-col">
+            <h1 className="text-xl font-black text-emerald-950 tracking-tighter leading-none">SATU</h1>
+            <div className="flex items-center gap-1 mt-0.5">
+              <div className="h-[2px] w-2 bg-emerald-500 rounded-full"></div>
+              <p className="text-[8px] font-black text-emerald-600 tracking-[0.2em] uppercase">BPJS TK</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Breadcrumb — kanan navbar, hidden di xs */}
         <div className="flex items-center gap-2">
-          <span className="text-sm font-medium text-emerald-700/70">Mentor Portal</span>
-          <ChevronRight size={16} className="text-emerald-200" />
-          <span className="text-sm font-bold text-emerald-900">Overview</span>
+          <span className="text-sm font-medium text-emerald-700/70 hidden sm:inline">Mentor Portal</span>
+          <ChevronRight size={16} className="text-emerald-200 hidden sm:inline" />
+          <span className="text-sm font-bold text-emerald-900 hidden sm:inline">Overview</span>
         </div>
       </header>
 
-      <div className="p-8 space-y-8 max-w-7xl mx-auto w-full">
+      {/* ── KONTEN UTAMA ── */}
+      <div className="p-6 lg:p-8 space-y-8 max-w-7xl mx-auto w-full">
+
+        {/* Greeting */}
         <div>
-          <h1 className="text-3xl font-black text-emerald-950 capitalize">
+          <h1 className="text-2xl lg:text-3xl font-black text-emerald-950 capitalize">
             Welcome back, {mentorName.toLowerCase()}!
           </h1>
-          <p className="text-emerald-700/60 mt-1">
+          <p className="text-emerald-700/60 mt-1 text-sm lg:text-base">
             Here's the latest update on your internship participants today.
           </p>
         </div>
 
+        {/* Stat Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="bg-white p-6 rounded-xl border border-emerald-100 shadow-sm hover:shadow-md transition-shadow">
             <div className="flex items-center justify-between mb-4">
@@ -170,50 +185,57 @@ export default function MentorDashboard() {
           </div>
         </div>
 
+        {/* Tabel */}
         <div className="bg-white border border-emerald-100 rounded-xl shadow-sm overflow-hidden">
-          <div className="px-6 py-4 border-b border-emerald-100 flex items-center gap-3 bg-emerald-50/10">
-            <div className="relative">
-              <select
-                value={selectedWeek}
-                onChange={(e) => setSelectedWeek(e.target.value)}
-                className="appearance-none pl-3 pr-8 py-1.5 text-sm font-semibold text-emerald-800 bg-white border border-emerald-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-400 cursor-pointer"
-              >
-                {WEEKS.map((w) => <option key={w}>{w}</option>)}
-              </select>
-              <ChevronDown size={13} className="absolute right-2 top-1/2 -translate-y-1/2 text-emerald-400 pointer-events-none" />
+
+          {/* ── Filter Bar ── */}
+          <div className="px-4 lg:px-6 py-4 border-b border-emerald-100 bg-emerald-50/10">
+            <div className="flex items-center gap-3 overflow-x-auto pb-1">
+
+              <div className="relative shrink-0">
+                <select
+                  value={selectedWeek}
+                  onChange={(e) => setSelectedWeek(e.target.value)}
+                  className="appearance-none pl-3 pr-8 py-1.5 text-sm font-semibold text-emerald-800 bg-white border border-emerald-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-400 cursor-pointer"
+                >
+                  {WEEKS.map((w) => <option key={w}>{w}</option>)}
+                </select>
+                <ChevronDown size={13} className="absolute right-2 top-1/2 -translate-y-1/2 text-emerald-400 pointer-events-none" />
+              </div>
+
+              <div className="relative shrink-0">
+                <select
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value as "semua" | "sudah" | "belum")}
+                  className="appearance-none pl-3 pr-8 py-1.5 text-sm font-semibold text-emerald-800 bg-white border border-emerald-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-400 cursor-pointer"
+                >
+                  <option value="semua">Semua Status</option>
+                  <option value="sudah">Sudah Lapor</option>
+                  <option value="belum">Belum Lapor</option>
+                </select>
+                <ChevronDown size={13} className="absolute right-2 top-1/2 -translate-y-1/2 text-emerald-400 pointer-events-none" />
+              </div>
+
+              <div className="flex-1 min-w-0" />
+
+              <button className="flex items-center gap-2 px-3 py-1.5 text-sm font-semibold text-emerald-700 border border-emerald-200 rounded-lg hover:bg-emerald-50 transition-colors shrink-0 whitespace-nowrap">
+                <Download size={14} />
+                Export Excel
+              </button>
             </div>
-
-            <div className="relative">
-              <select
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value as "semua" | "sudah" | "belum")}
-                className="appearance-none pl-3 pr-8 py-1.5 text-sm font-semibold text-emerald-800 bg-white border border-emerald-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-400 cursor-pointer"
-              >
-                <option value="semua">Semua Status</option>
-                <option value="sudah">Sudah Lapor</option>
-                <option value="belum">Belum Lapor</option>
-              </select>
-              <ChevronDown size={13} className="absolute right-2 top-1/2 -translate-y-1/2 text-emerald-400 pointer-events-none" />
-            </div>
-
-            <div className="flex-1" />
-
-            <button className="flex items-center gap-2 px-3 py-1.5 text-sm font-semibold text-emerald-700 border border-emerald-200 rounded-lg hover:bg-emerald-50 transition-colors">
-              <Download size={14} />
-              Export Excel
-            </button>
           </div>
 
-          <div className="overflow-x-auto">
-            <table className="w-full text-left">
+          {/* ── Tabel scroll horizontal ── */}
+          <div className="overflow-x-auto w-full">
+            <table className="w-full text-left min-w-[700px]">
               <thead>
                 <tr className="bg-emerald-50/50 border-b border-emerald-100">
-                  <th className="px-6 py-4 text-xs font-bold uppercase text-emerald-700/70">Mahasiswa</th>
-                  <th className="px-6 py-4 text-xs font-bold uppercase text-emerald-700/70">Status</th>
-                  <th className="px-6 py-4 text-xs font-bold uppercase text-emerald-700/70 text-center">Poin</th>
-                  <th className="px-6 py-4 text-xs font-bold uppercase text-emerald-700/70 text-center">Attitude</th>
-                  <th className="px-6 py-4 text-xs font-bold uppercase text-emerald-700/70 text-center">Digitalisasi</th>
-                  <th className="px-6 py-4 text-xs font-bold uppercase text-emerald-700/70 text-center">Drive</th>
+                  <th className="px-6 py-4 text-xs font-bold uppercase text-emerald-700/70 whitespace-nowrap">Mahasiswa</th>
+                  <th className="px-6 py-4 text-xs font-bold uppercase text-emerald-700/70 whitespace-nowrap">Status</th>
+                  <th className="px-6 py-4 text-xs font-bold uppercase text-emerald-700/70 text-center whitespace-nowrap">Poin</th>
+                  <th className="px-6 py-4 text-xs font-bold uppercase text-emerald-700/70 text-center whitespace-nowrap">Attitude</th>
+                  <th className="px-6 py-4 text-xs font-bold uppercase text-emerald-700/70 text-center whitespace-nowrap">Digitalisasi</th>
+                  <th className="px-6 py-4 text-xs font-bold uppercase text-emerald-700/70 text-center whitespace-nowrap">Drive</th>
                   <th className="px-6 py-4 w-8" />
                 </tr>
               </thead>
@@ -224,23 +246,21 @@ export default function MentorDashboard() {
                     <tr
                       onClick={() => toggleRow(s.id)}
                       className={`transition-colors cursor-pointer ${
-                        expandedRow === s.id
-                          ? "bg-emerald-50/40"
-                          : "hover:bg-emerald-50/30"
+                        expandedRow === s.id ? "bg-emerald-50/40" : "hover:bg-emerald-50/30"
                       }`}
                     >
                       <td className="px-6 py-4">
-                        <p className="text-sm font-medium text-emerald-900">{s.nama}</p>
+                        <p className="text-sm font-medium text-emerald-900 whitespace-nowrap">{s.nama}</p>
                         <p className="text-xs text-emerald-700/50 font-mono mt-0.5">{s.nim}</p>
                       </td>
 
                       <td className="px-6 py-4">
                         {s.status === "sudah" ? (
-                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-700">
+                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-700 whitespace-nowrap">
                             <CheckCircle2 size={11} /> Sudah
                           </span>
                         ) : (
-                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-red-50 text-red-500">
+                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-red-50 text-red-500 whitespace-nowrap">
                             <Clock size={11} /> Belum
                           </span>
                         )}
@@ -253,19 +273,11 @@ export default function MentorDashboard() {
                       </td>
 
                       <td className="px-6 py-4 text-center">
-                        <ScoreInput
-                          value={s.attitude}
-                          max={10}
-                          onChange={(v) => updateScore(s.id, "attitude", v)}
-                        />
+                        <ScoreInput value={s.attitude} max={10} onChange={(v) => updateScore(s.id, "attitude", v)} />
                       </td>
 
                       <td className="px-6 py-4 text-center">
-                        <ScoreInput
-                          value={s.digitalisasi}
-                          max={20}
-                          onChange={(v) => updateScore(s.id, "digitalisasi", v)}
-                        />
+                        <ScoreInput value={s.digitalisasi} max={20} onChange={(v) => updateScore(s.id, "digitalisasi", v)} />
                       </td>
 
                       <td className="px-6 py-4 text-center">
@@ -275,7 +287,7 @@ export default function MentorDashboard() {
                             target="_blank"
                             rel="noopener noreferrer"
                             onClick={(e) => e.stopPropagation()}
-                            className="text-emerald-600 hover:text-emerald-700 inline-flex items-center gap-1 font-medium underline underline-offset-4 decoration-emerald-200 text-sm"
+                            className="text-emerald-600 hover:text-emerald-700 inline-flex items-center gap-1 font-medium underline underline-offset-4 decoration-emerald-200 text-sm whitespace-nowrap"
                           >
                             <ExternalLink size={13} /> Drive
                           </a>
@@ -298,10 +310,10 @@ export default function MentorDashboard() {
                       <tr className="bg-emerald-50/20">
                         <td colSpan={7} className="px-8 py-4 border-b border-emerald-50">
                           <p className="text-xs font-bold uppercase text-emerald-700/50 mb-3">Detail Aktivitas</p>
-                          <div className="flex items-start gap-8">
+                          <div className="flex items-start gap-8 overflow-x-auto pb-1">
                             {RINCIAN_KEYS.map(({ label, key }) => (
-                              <div key={key}>
-                                <p className="text-xs text-emerald-700/50 font-medium mb-1">{label}</p>
+                              <div key={key} className="shrink-0">
+                                <p className="text-xs text-emerald-700/50 font-medium mb-1 whitespace-nowrap">{label}</p>
                                 <p className={`text-xl font-black font-mono ${s.rincian[key] > 0 ? "text-emerald-900" : "text-emerald-200"}`}>
                                   {s.rincian[key]}
                                 </p>
@@ -330,6 +342,7 @@ export default function MentorDashboard() {
             </table>
           </div>
 
+          {/* Footer tabel */}
           <div className="px-6 py-4 border-t border-emerald-100 text-sm text-emerald-700/60 flex justify-between items-center bg-emerald-50/10">
             <span>{filtered.length} dari {students.length} mahasiswa · {selectedWeek}</span>
           </div>
