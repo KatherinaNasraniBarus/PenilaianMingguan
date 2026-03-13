@@ -22,6 +22,9 @@ export default function SubmitReport() {
   const [studentData, setStudentData] = useState<{ nim: string; nama: string } | null>(null);
   const [submitError, setSubmitError] = useState("");
   
+  // STATE BARU KHUSUS UNTUK NOTIFIKASI MOBILE
+  const [showNotification, setShowNotification] = useState(false);
+  
   const [formData, setFormData] = useState({
     nama: "",
     seminar: "",
@@ -38,17 +41,14 @@ export default function SubmitReport() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [currentTime, setCurrentTime] = useState(new Date());
 
-  // LOGIKA LOGIN: Ambil data mahasiswa dari localStorage
   useEffect(() => {
     const storedNim = localStorage.getItem("userNim");
     const storedName = localStorage.getItem("userName");
 
     if (storedNim && storedName) {
       setStudentData({ nim: storedNim, nama: storedName });
-      // Otomatis isi nama di form berdasarkan data login
       setFormData(prev => ({ ...prev, nama: storedName }));
     } else {
-      // Jika belum login, tendang ke halaman awal
       navigate("/");
     }
   }, [navigate]);
@@ -58,11 +58,20 @@ export default function SubmitReport() {
     return () => clearInterval(timer);
   }, []);
 
+  // LOGIKA TIMER 6 DETIK UNTUK NOTIFIKASI
+  useEffect(() => {
+    if (showNotification) {
+      const timer = setTimeout(() => {
+        setShowNotification(false);
+      }, 6000);
+      return () => clearTimeout(timer); // Membersihkan timer jika komponen di-unmount
+    }
+  }, [showNotification]);
+
   const day = currentTime.getDay();
   const hour = currentTime.getHours();
   const minute = currentTime.getMinutes();
 
-  // Deadline: Tuesday (2) at 23:59
   const passedDeadline =
     day > 2 || (day === 2 && (hour > 23 || (hour === 23 && minute > 59)));
 
@@ -71,14 +80,12 @@ export default function SubmitReport() {
       ...formData,
       [e.target.name]: e.target.value
     });
-
     setErrors({
       ...errors,
       [e.target.name]: ""
     });
   };
 
-  // LOGIKA API: Pengiriman data ke XAMPP
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitError("");
@@ -103,7 +110,6 @@ export default function SubmitReport() {
 
     setIsSubmitting(true);
 
-    // Siapkan data untuk dikirim ke API
     const payload = {
       nim: studentData.nim,
       minggu: "Minggu 1", 
@@ -131,6 +137,7 @@ export default function SubmitReport() {
 
       if (response.ok && result.status === "success") {
         setSubmitted(true);
+        setShowNotification(true); // Tampilkan notifikasi saat berhasil
       } else {
         setSubmitError(result.message || "Gagal mengirim laporan. Coba lagi nanti.");
       }
@@ -142,13 +149,8 @@ export default function SubmitReport() {
   };
 
   return (
-    // min-h-full agar sticky berfungsi dengan benar saat discroll
-    <div className="flex flex-col min-h-full bg-emerald-50/20">
-      
-      {/* HEADER NAVBAR (Sticky & Z-30) */}
+    <div className="flex flex-col min-h-full bg-emerald-50/20 relative">
       <header className="h-16 bg-white/80 backdrop-blur-md border-b border-emerald-100 flex items-center justify-between lg:justify-end px-6 lg:px-8 sticky top-0 z-30 shrink-0 lg:pl-8 pl-16">
-        
-        {/* Bagian Kiri: Logo dan Teks (HANYA MUNCUL DI HP, HILANG DI LAPTOP) */}
         <div className="flex lg:hidden items-center gap-3">
           <div className="w-9 h-9 bg-white rounded-lg flex items-center justify-center border border-emerald-50 shrink-0 p-0.5">
             <img 
@@ -166,7 +168,6 @@ export default function SubmitReport() {
           </div>
         </div>
 
-        {/* Bagian Kanan: Breadcrumb */}
         <div className="flex items-center gap-2">
           <span className="text-sm font-medium text-emerald-700/70 hidden sm:inline">Laporan</span>
           <ChevronRight size={14} className="text-emerald-200 hidden sm:inline" />
@@ -174,7 +175,6 @@ export default function SubmitReport() {
         </div>
       </header>
 
-      {/* Konten Utama */}
       <main className="flex-1 p-6 md:p-8 max-w-4xl mx-auto w-full pb-20">
         <motion.div 
           initial={{ opacity: 0, y: 10 }}
@@ -227,7 +227,7 @@ export default function SubmitReport() {
               <motion.div 
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
-                className="mb-8 p-5 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center gap-4 text-emerald-700 shadow-sm"
+                className="hidden md:flex mb-8 p-5 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center gap-4 text-emerald-700 shadow-sm"
               >
                 <div className="bg-emerald-500 p-2 rounded-full text-white">
                   <CheckCircle size={24} />
@@ -250,9 +250,7 @@ export default function SubmitReport() {
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-bold text-emerald-700 ml-1">
-                  Nama Lengkap
-                </label>
+                <label className="text-sm font-bold text-emerald-700 ml-1">Nama Lengkap</label>
                 <input
                   type="text"
                   name="nama"
@@ -264,12 +262,6 @@ export default function SubmitReport() {
                     errors.nama ? "border-red-300 bg-red-50" : "border-emerald-100 bg-emerald-50/50 cursor-not-allowed text-emerald-900 font-bold"
                   }`}
                 />
-                <p className="text-[10px] text-emerald-500 mt-1 italic ml-1">
-                  *Nama terisi otomatis berdasarkan data login Anda
-                </p>
-                {errors.nama && (
-                  <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-red-500 text-xs font-medium mt-1 ml-1">{errors.nama}</motion.p>
-                )}
               </div>
             </section>
 
@@ -293,9 +285,7 @@ export default function SubmitReport() {
                   { label: "Kunjungan BPU", name: "kunjunganBpu" }
                 ].map((item, index) => (
                   <div key={index} className="space-y-2">
-                    <label className="text-sm font-bold text-emerald-700 ml-1">
-                      {item.label}
-                    </label>
+                    <label className="text-sm font-bold text-emerald-700 ml-1">{item.label}</label>
                     <input
                       type="number"
                       min="0"
@@ -324,9 +314,7 @@ export default function SubmitReport() {
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-bold text-emerald-700 ml-1">
-                  Link Google Drive
-                </label>
+                <label className="text-sm font-bold text-emerald-700 ml-1">Link Google Drive</label>
                 <input
                   type="url"
                   name="drive"
@@ -341,13 +329,9 @@ export default function SubmitReport() {
                 {errors.drive && (
                   <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-red-500 text-xs font-medium mt-1 ml-1">{errors.drive}</motion.p>
                 )}
-                <p className="text-[10px] text-emerald-400 mt-2 italic ml-1">
-                  *Pastikan link dapat diakses oleh Mentor.
-                </p>
               </div>
             </section>
 
-            {/* BUTTON */}
             <div className="flex justify-end pt-6 pb-16">
               <motion.button
                 whileHover={!submitted && !isSubmitting ? { scale: 1.02 } : {}}
@@ -368,12 +352,34 @@ export default function SubmitReport() {
                 ) : (
                   <CheckCircle size={22} className="animate-pulse" />
                 )}
-                {isSubmitting ? "Mengirim Data..." : submitted ? "Laporan Terkirim" : "Submit Laporan Sekarang"}
+                {isSubmitting ? "Mengirim Data..." : submitted ? "Laporan Terkirim" : "Submit"}
               </motion.button>
             </div>
           </form>
         </motion.div>
       </main>
+
+      {/* NOTIFIKASI BAWAH KHUSUS MOBILE (Gaya Terang/Light Theme tanpa tombol X) */}
+      <AnimatePresence>
+        {showNotification && (
+          <motion.div
+            initial={{ opacity: 0, y: 100 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 100 }}
+            transition={{ type: "spring", stiffness: 300, damping: 25 }}
+            className="fixed bottom-6 left-4 right-4 z-50 md:hidden bg-white border border-emerald-100 p-4 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] flex items-center gap-3"
+          >
+            <div className="bg-emerald-50 p-2 rounded-full">
+              <CheckCircle size={24} className="text-emerald-500" />
+            </div>
+            <div className="flex flex-col">
+              <span className="font-bold text-sm text-emerald-950">Berhasil!</span>
+              <span className="text-xs text-emerald-600/80">File sudah terkirim</span>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
     </div>
   );
 }
