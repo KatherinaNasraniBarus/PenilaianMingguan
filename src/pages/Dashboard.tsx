@@ -28,27 +28,18 @@ export default function Dashboard() {
     if (name) setUserName(name);
 
     if (nim) {
-      // Panggil API PHP
-      fetch(`http://localhost/api-penilaian/get_dashboard_mahasiswa.php?nim=${nim}&minggu=Minggu%201`)
+      // Panggil API PHP dengan NIM saja agar semua riwayat ditarik
+      fetch(`http://localhost/api-penilaian/get_dashboard_mahasiswa.php?nim=${nim}`)
         .then(res => res.json())
         .then(result => {
           if (result.status === "success") {
-            const dbData = result.data;
+            const reportsData = result.data; // Array dari semua minggu
             
-            // Mengubah format tanggal dari XAMPP (Y-m-d H:i:s) menjadi format Indonesia yang cantik
-            let formattedDate = "Minggu 1";
-            if (dbData.tanggal_submit) {
-              // Ganti spasi dengan 'T' agar aman di semua browser
-              const dateObj = new Date(dbData.tanggal_submit.replace(" ", "T"));
-              formattedDate = dateObj.toLocaleDateString("id-ID", {
-                day: "numeric",
-                month: "short",
-                year: "numeric",
-                hour: "2-digit",
-                minute: "2-digit"
-              }).replace(/\./g, ':'); // Ubah pemisah jam dari titik ke titik dua
-            }
-            
+            let calculatedTotalPoints = 0;
+            let calculatedReportCount = reportsData.length; 
+            const mappedReports: Report[] = [];
+            let reportIdCounter = 1;
+
             const activityMap = [
               { key: "kehadiran_seminar", label: "Kehadiran Seminar" },
               { key: "akuisisi_pu", label: "Akuisisi PU" },
@@ -60,30 +51,41 @@ export default function Dashboard() {
               { key: "kunjungan_bpu", label: "Kunjungan BPU" },
             ];
 
-            let calculatedTotalPoints = 0;
-            const mappedReports: Report[] = [];
-
-            activityMap.forEach((act, index) => {
-              const count = Number(dbData[act.key as keyof typeof dbData]);
-              if (count > 0) {
-                calculatedTotalPoints += count;
-                
-                mappedReports.push({
-                  id: index + 1,
-                  date: formattedDate, // <-- Menggunakan TANGGAL ASLI di sini
-                  activity_type: act.label,
-                  description: `Melaporkan ${count} aktivitas ${act.label}`,
-                  evidence_type: "link",
-                  evidence_text: "Google Drive",
-                  evidence_link: dbData.link_drive || "",
-                  points: count,
-                });
+            // Looping ke SEMUA minggu yang pernah dikirim mahasiswa
+            reportsData.forEach((dbData: any) => {
+              
+              let formattedDate = dbData.minggu;
+              if (dbData.tanggal_submit) {
+                const dateObj = new Date(dbData.tanggal_submit.replace(" ", "T"));
+                formattedDate = dateObj.toLocaleDateString("id-ID", {
+                  day: "numeric", month: "short", year: "numeric",
+                  hour: "2-digit", minute: "2-digit"
+                }).replace(/\./g, ':');
               }
+
+              // Looping ke setiap aktivitas di dalam minggu tersebut
+              activityMap.forEach((act) => {
+                const count = Number(dbData[act.key]);
+                if (count > 0) {
+                  calculatedTotalPoints += count;
+                  
+                  mappedReports.push({
+                    id: reportIdCounter++,
+                    date: formattedDate,
+                    activity_type: act.label,
+                    description: `[${dbData.minggu}] Melaporkan ${count} aktivitas ${act.label}`,
+                    evidence_type: "link",
+                    evidence_text: "Google Drive",
+                    evidence_link: dbData.link_drive || "",
+                    points: count,
+                  });
+                }
+              });
             });
 
             setReports(mappedReports);
             setTotalPoints(calculatedTotalPoints);
-            setReportCount(dbData.link_drive ? 1 : 0); 
+            setReportCount(calculatedReportCount); 
           }
         })
         .catch(err => console.error("Failed to fetch reports:", err))
