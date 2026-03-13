@@ -23,12 +23,15 @@ export default function Layout() {
       <div className="flex-1 flex flex-col overflow-hidden relative">
         
         {/* TOMBOL HAMBURGER (Absolute & Z-50) */}
-        <button 
-          onClick={() => setIsSidebarOpen(true)}
-          className="lg:hidden absolute top-3 left-4 z-50 p-2 bg-white border border-emerald-100 rounded-xl shadow-sm text-emerald-600 hover:bg-emerald-50 transition-all active:scale-95"
-        >
-          <Menu size={20} />
-        </button>
+        {/* Tambahkan kondisi {!isSidebarOpen} di sini */}
+        {!isSidebarOpen && (
+          <button 
+            onClick={() => setIsSidebarOpen(true)}
+            className="lg:hidden absolute top-3 left-4 z-50 p-2 bg-white border border-emerald-100 rounded-xl shadow-sm text-emerald-600 hover:bg-emerald-50 transition-all active:scale-95"
+          >
+            <Menu size={20} />
+          </button>
+        )}
 
         {/* Area yang bisa di-scroll */}
         <main className="flex-1 overflow-y-auto relative">
