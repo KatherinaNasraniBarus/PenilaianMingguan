@@ -2,10 +2,9 @@ import React, { useState, useCallback, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   ChevronRight, ChevronDown, Download, ExternalLink, Users, 
-  CheckCircle2, Clock, Trash2, UserPlus, ShieldAlert, X, Key, Copy, GraduationCap, AlertCircle, Mail, MessageCircle
+  CheckCircle2, Clock, Trash2, UserPlus, ShieldAlert, X, Key, Copy, GraduationCap, AlertCircle, Mail, MessageCircle, CalendarClock, Save
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
-// MENGGUNAKAN LOGO DARI TEMAN ANDA
 import logo from "../image/bpjstk.jpeg"; 
 import * as XLSX from 'xlsx';
 
@@ -48,9 +47,14 @@ export default function MentorDashboard() {
   
   const [refreshTrigger, setRefreshTrigger] = useState(0);
 
-  // ─── STATE UNTUK PAGINATION (DARI TEMAN ANDA) ───
+  // ─── STATE UNTUK PAGINATION ───
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
+
+  // ─── STATE KHUSUS DEADLINE ───
+  const [isDeadlineModalOpen, setIsDeadlineModalOpen] = useState(false);
+  const [deadlines, setDeadlines] = useState<Record<string, string>>({});
+  const [savingDeadline, setSavingDeadline] = useState<string | null>(null);
 
   // STATE KELOLA MENTOR
   const [isMentorModalOpen, setIsMentorModalOpen] = useState(false);
@@ -69,6 +73,13 @@ export default function MentorDashboard() {
   const [isAddingStudent, setIsAddingStudent] = useState(false);
   const [studentFormErrors, setStudentFormErrors] = useState<{nama?: string, nim?: string, email?: string, mentor?: string}>({});
 
+  const fetchDeadlines = useCallback(() => {
+    fetch("http://localhost/api-penilaian/manage_deadlines.php")
+      .then(res => res.json())
+      .then(data => { if (data.status === "success") setDeadlines(data.data); })
+      .catch(err => console.error("Gagal mengambil deadline:", err));
+  }, []);
+
   useEffect(() => {
     const mentorDataStr = localStorage.getItem("mentor_data");
     if (!mentorDataStr) {
@@ -84,12 +95,37 @@ export default function MentorDashboard() {
       .then((data) => {
         if (data.status === "success") {
           setStudents(data.data);
-          setCurrentPage(1); // Reset ke halaman 1 setiap ganti minggu
+          setCurrentPage(1); 
         }
       })
       .catch((err) => console.error("Error fetching data:", err));
       
-  }, [navigate, selectedWeek, refreshTrigger]); 
+    fetchDeadlines(); // Tarik data deadline saat komponen dimuat
+  }, [navigate, selectedWeek, refreshTrigger, fetchDeadlines]); 
+
+  const handleSaveDeadline = async (minggu: string, tanggal: string) => {
+    if (!tanggal) {
+      alert("Silakan pilih tanggal terlebih dahulu!");
+      return;
+    }
+    setSavingDeadline(minggu);
+    try {
+      const response = await fetch("http://localhost/api-penilaian/manage_deadlines.php", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ minggu, tanggal_deadline: tanggal })
+      });
+      const result = await response.json();
+      if(result.status === "success") {
+        fetchDeadlines(); 
+      } else {
+        alert("Gagal menyimpan deadline: " + result.message);
+      }
+    } catch (err) {
+      alert("Kesalahan koneksi.");
+    } finally {
+      setSavingDeadline(null);
+    }
+  };
 
   // FUNGSI KELOLA MENTOR & MAHASISWA
   const fetchMentors = () => {
@@ -224,7 +260,51 @@ export default function MentorDashboard() {
   return (
     <div className="flex flex-col min-h-full bg-emerald-50/20">
 
-      {/* ─── MODAL KELOLA MENTOR ─── */}
+      {/* ─── MODAL ATUR DEADLINE ─── */}
+      <AnimatePresence>
+        {isDeadlineModalOpen && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-emerald-950/60 backdrop-blur-sm">
+            <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} className="bg-white rounded-3xl w-full max-w-xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
+              <div className="px-6 py-5 border-b border-emerald-100 flex justify-between items-center bg-emerald-50/50">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-emerald-600 text-white rounded-lg"><CalendarClock size={20} /></div>
+                  <h3 className="text-xl font-black text-emerald-950">Atur Deadline Laporan</h3>
+                </div>
+                <button onClick={() => setIsDeadlineModalOpen(false)} className="p-2 text-emerald-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"><X size={24} /></button>
+              </div>
+
+              <div className="flex-1 overflow-y-auto p-6">
+                <p className="text-sm text-emerald-700/70 mb-5">Tentukan batas akhir (deadline) pengumpulan laporan mingguan untuk mahasiswa. Tanggal ini akan terlihat di dashboard mereka.</p>
+                <div className="space-y-4">
+                  {WEEKS.map((w) => (
+                    <div key={w} className="flex items-center justify-between bg-white border border-emerald-100 p-4 rounded-2xl shadow-sm hover:shadow-md transition-shadow">
+                      <div className="font-bold text-emerald-900">{w}</div>
+                      <div className="flex items-center gap-3">
+                        <input 
+                          type="date" 
+                          value={deadlines[w] || ""}
+                          onChange={(e) => setDeadlines(prev => ({...prev, [w]: e.target.value}))}
+                          className="border border-emerald-200 rounded-lg px-3 py-2 text-sm font-medium text-emerald-800 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                        />
+                        <button 
+                          onClick={() => handleSaveDeadline(w, deadlines[w])}
+                          disabled={savingDeadline === w}
+                          className="bg-emerald-100 hover:bg-emerald-600 text-emerald-700 hover:text-white p-2.5 rounded-lg transition-colors flex items-center justify-center"
+                          title="Simpan Deadline"
+                        >
+                          {savingDeadline === w ? <div className="w-5 h-5 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin"/> : <Save size={18} />}
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ─── MODAL KELOLA MENTOR (Disembunyikan demi keringkasan kode, format sama seperti sebelumnya) ─── */}
       <AnimatePresence>
         {isMentorModalOpen && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-emerald-950/60 backdrop-blur-sm">
@@ -421,8 +501,12 @@ export default function MentorDashboard() {
             </p>
           </div>
 
+          {/* ─── DERETAN TOMBOL ADMIN (TERMASUK TOMBOL DEADLINE) ─── */}
           {userRole === 'admin' && (
-            <div className="flex gap-2">
+            <div className="flex gap-2 flex-wrap justify-end">
+              <button onClick={() => setIsDeadlineModalOpen(true)} className="flex items-center gap-2 bg-rose-500 hover:bg-rose-600 text-white px-4 py-2 rounded-xl font-bold transition-all shadow-sm text-sm">
+                <CalendarClock size={16} /> Atur Deadline
+              </button>
               <a href="http://localhost:3000" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-xl font-bold transition-all shadow-sm text-sm">
                 <MessageCircle size={16} /> Panel WhatsApp
               </a>
@@ -457,13 +541,23 @@ export default function MentorDashboard() {
         <div className="bg-white border border-emerald-100 rounded-xl shadow-sm overflow-hidden">
           <div className="px-4 lg:px-6 py-4 border-b border-emerald-100 bg-emerald-50/10">
             <div className="flex items-center gap-3 overflow-x-auto pb-1">
-              <div className="relative shrink-0">
-                <select value={selectedWeek} onChange={(e) => setSelectedWeek(e.target.value)} className="appearance-none pl-3 pr-8 py-1.5 text-sm font-semibold text-emerald-800 bg-white border border-emerald-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-400 cursor-pointer">
-                  {WEEKS.map((w) => <option key={w}>{w}</option>)}
-                </select>
-                <ChevronDown size={13} className="absolute right-2 top-1/2 -translate-y-1/2 text-emerald-400 pointer-events-none" />
+              
+              {/* INFO DEADLINE TAMPIL DI SEBELAH PILIHAN MINGGU */}
+              <div className="flex flex-col">
+                <div className="relative shrink-0">
+                  <select value={selectedWeek} onChange={(e) => setSelectedWeek(e.target.value)} className="appearance-none pl-3 pr-8 py-1.5 text-sm font-semibold text-emerald-800 bg-white border border-emerald-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-400 cursor-pointer">
+                    {WEEKS.map((w) => <option key={w}>{w}</option>)}
+                  </select>
+                  <ChevronDown size={13} className="absolute right-2 top-1/2 -translate-y-1/2 text-emerald-400 pointer-events-none" />
+                </div>
+                {deadlines[selectedWeek] && (
+                  <span className="text-[10px] font-bold text-rose-500 mt-1 pl-1">
+                    Deadline: {new Date(deadlines[selectedWeek]).toLocaleDateString('id-ID')}
+                  </span>
+                )}
               </div>
-              <div className="relative shrink-0">
+
+              <div className="relative shrink-0 self-start">
                 <select value={statusFilter} onChange={(e) => { setStatusFilter(e.target.value as "semua" | "sudah" | "belum"); setCurrentPage(1); }} className="appearance-none pl-3 pr-8 py-1.5 text-sm font-semibold text-emerald-800 bg-white border border-emerald-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-400 cursor-pointer">
                   <option value="semua">Semua Status</option>
                   <option value="sudah">Sudah Lapor</option>
@@ -471,8 +565,10 @@ export default function MentorDashboard() {
                 </select>
                 <ChevronDown size={13} className="absolute right-2 top-1/2 -translate-y-1/2 text-emerald-400 pointer-events-none" />
               </div>
+              
               <div className="flex-1 min-w-0" />
-              <button onClick={handleExportExcel} className="flex items-center gap-2 px-3 py-1.5 text-sm font-semibold text-emerald-700 border border-emerald-200 rounded-lg hover:bg-emerald-50 active:scale-95 transition-all shrink-0 whitespace-nowrap">
+              
+              <button onClick={handleExportExcel} className="flex items-center self-start gap-2 px-3 py-1.5 text-sm font-semibold text-emerald-700 border border-emerald-200 rounded-lg hover:bg-emerald-50 active:scale-95 transition-all shrink-0 whitespace-nowrap">
                 <Download size={14} /> Export Excel
               </button>
             </div>
@@ -612,7 +708,6 @@ export default function MentorDashboard() {
               </button>
             </div>
           </div>
-          {/* ─── END FOOTER PAGINATION ─── */}
 
         </div>
       </div>
