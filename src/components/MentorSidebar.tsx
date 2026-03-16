@@ -1,7 +1,7 @@
 import { LayoutDashboard, Users, ClipboardCheck, BarChart2, LogOut, UserCircle, X } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
-import logo from "../image/logobpjss.png";
+import logo from "../image/bpjstk.jpeg";
 
 interface MentorSidebarProps {
   isOpen: boolean;
@@ -47,18 +47,13 @@ export default function MentorSidebar({ isOpen, onClose }: MentorSidebarProps) {
         } lg:translate-x-0`}
       >
         {/* Header */}
-        <div className="p-6 border-b border-emerald-50 flex justify-between items-center shrink-0">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center shadow-sm border border-emerald-100 shrink-0 overflow-hidden p-1">
-              <img src={logo} alt="Logo BPJS TK" className="w-full h-full object-contain" />
-            </div>
-            <div>
-              <h1 className="text-2xl font-black text-emerald-950 tracking-tighter leading-none">SATU</h1>
-              <div className="flex items-center gap-1 mt-1">
-                <div className="h-[2px] w-3 bg-emerald-500 rounded-full"></div>
-                <p className="text-[9px] font-black text-emerald-600 tracking-[0.2em] uppercase">BPJS TK</p>
-              </div>
-            </div>
+        <div className="h-24 px-6 flex items-center justify-between border-b border-emerald-50 shrink-0">
+          <div className="flex items-center justify-start h-full w-full">
+            <img 
+              src={logo}
+              alt="Logo BPJS Ketenagakerjaan"
+              className="h-16 w-auto object-contain" // Tinggi h-16 membuat logo sangat dominan dan jelas
+            />
           </div>
           <button
             onClick={onClose}
