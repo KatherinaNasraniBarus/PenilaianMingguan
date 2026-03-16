@@ -269,7 +269,7 @@ export default function Dashboard() {
           
           <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto mt-2">
             <a 
-              href="http://localhost/absensai/" 
+              href="https://localhost:5173/" 
               target="_blank" 
               rel="noopener noreferrer"
               className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-xl font-bold transition-all shadow-md active:scale-95 justify-center"
