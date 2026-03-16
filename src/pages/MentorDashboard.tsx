@@ -58,7 +58,7 @@ export default function MentorDashboard() {
   const [isStudentModalOpen, setIsStudentModalOpen] = useState(false);
   const [newStudentName, setNewStudentName] = useState("");
   const [newStudentNim, setNewStudentNim] = useState("");
-  const [newStudentEmail, setNewStudentEmail] = useState(""); // <-- STATE BARU UNTUK EMAIL
+  const [newStudentEmail, setNewStudentEmail] = useState(""); 
   const [selectedNewMentor, setSelectedNewMentor] = useState("");
   const [newStudentAccountInfo, setNewStudentAccountInfo] = useState<{nim: string, password: string, email_sent: boolean} | null>(null);
   const [isAddingStudent, setIsAddingStudent] = useState(false);
@@ -136,7 +136,7 @@ export default function MentorDashboard() {
     setNewStudentAccountInfo(null);
     setNewStudentName("");
     setNewStudentNim("");
-    setNewStudentEmail(""); // <-- Bersihkan email
+    setNewStudentEmail(""); 
     setSelectedNewMentor("");
     setStudentFormErrors({}); 
     fetchMentors(); 
@@ -145,7 +145,6 @@ export default function MentorDashboard() {
   const handleAddStudent = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Validasi Form
     const errors: {nama?: string, nim?: string, email?: string, mentor?: string} = {};
     if (!newStudentName.trim()) errors.nama = "Nama Lengkap tidak boleh kosong!";
     if (!newStudentNim.trim()) errors.nim = "NIM tidak boleh kosong!";
@@ -170,7 +169,7 @@ export default function MentorDashboard() {
         body: JSON.stringify({ 
           nama: newStudentName, 
           nim: newStudentNim, 
-          email: newStudentEmail, // <-- Kirim email ke PHP
+          email: newStudentEmail,
           mentor_id: selectedNewMentor 
         })
       });
@@ -209,11 +208,8 @@ export default function MentorDashboard() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ nim })
         });
-        
         const result = await response.json();
-        
         if (result.status === "success") {
-          // Trigger refresh otomatis agar tabel langsung terupdate
           setRefreshTrigger(prev => prev + 1);
         } else {
           alert("Gagal menghapus mahasiswa: " + result.message);
@@ -235,14 +231,29 @@ export default function MentorDashboard() {
   );
 
   const handleExportExcel = () => {
-    const dataToExport = filtered.map((s) => ({
-      "NIM": s.nim, "Nama Mahasiswa": s.nama, "Mentor Pembimbing": s.nama_mentor || "-",
-      "Status Laporan": s.status === "sudah" ? "Sudah Lapor" : "Belum Lapor",
-      "Poin Aktivitas": s.poinMingguan, "Nilai Attitude": s.attitude === "" ? 0 : s.attitude,
-      "Nilai Digitalisasi": s.digitalisasi === "" ? 0 : s.digitalisasi,
-      "TOTAL POIN AKHIR": s.poinKumulatif + (Number(s.attitude) || 0) + (Number(s.digitalisasi) || 0),
-      "Link Evidence": s.driveLink || "Tidak ada"
-    }));
+    const dataToExport = filtered.map((s) => {
+      // 1. Data dasar yang selalu ada untuk Admin & Mentor
+      const baseData: any = {
+        "NIM": s.nim, 
+        "Nama Mahasiswa": s.nama, 
+        "Mentor Pembimbing": s.nama_mentor || "-",
+        "Status Laporan": s.status === "sudah" ? "Sudah Lapor" : "Belum Lapor",
+        "Poin Aktivitas": s.poinMingguan,
+      };
+
+      // 2. Kolom Attitude & Digitalisasi HANYA muncul di Excel jika yang export adalah Mentor
+      if (userRole !== 'admin') {
+        baseData["Nilai Attitude"] = s.attitude === "" ? 0 : s.attitude;
+        baseData["Nilai Digitalisasi"] = s.digitalisasi === "" ? 0 : s.digitalisasi;
+      }
+
+      // 3. Kolom terakhir
+      baseData["TOTAL POIN AKHIR"] = s.poinKumulatif + (Number(s.attitude) || 0) + (Number(s.digitalisasi) || 0);
+      baseData["Link Evidence"] = s.driveLink || "Tidak ada";
+
+      return baseData;
+    });
+
     const worksheet = XLSX.utils.json_to_sheet(dataToExport);
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, `Rekap ${selectedWeek}`);
@@ -452,13 +463,10 @@ export default function MentorDashboard() {
                     {studentFormErrors.nim && <p className="text-red-500 text-xs font-medium ml-1 flex items-center gap-1"><AlertCircle size={12} /> {studentFormErrors.nim}</p>}
                   </div>
 
-                  {/* KOLOM EMAIL BARU */}
                   <div className="space-y-1.5">
                     <label className="text-sm font-bold text-emerald-900 ml-1">Email Mahasiswa</label>
                     <div className="relative">
-                      <div className="absolute left-4 top-1/2 -translate-y-1/2 text-emerald-400">
-                        <Mail size={16} />
-                      </div>
+                      <div className="absolute left-4 top-1/2 -translate-y-1/2 text-emerald-400"><Mail size={16} /></div>
                       <input 
                         type="email" placeholder="contoh@gmail.com" 
                         value={newStudentEmail} 
@@ -616,8 +624,15 @@ export default function MentorDashboard() {
                   <th className="px-6 py-4 text-xs font-bold uppercase text-emerald-700/70 whitespace-nowrap">Mahasiswa</th>
                   <th className="px-6 py-4 text-xs font-bold uppercase text-emerald-700/70 whitespace-nowrap">Status</th>
                   <th className="px-6 py-4 text-xs font-bold uppercase text-emerald-700/70 text-center whitespace-nowrap">Poin Aktivitas</th>
-                  <th className="px-6 py-4 text-xs font-bold uppercase text-emerald-700/70 text-center whitespace-nowrap">Attitude</th>
-                  <th className="px-6 py-4 text-xs font-bold uppercase text-emerald-700/70 text-center whitespace-nowrap">Digitalisasi</th>
+                  
+                  {/* KOLOM ATTITUDE & DIGITALISASI HANYA MUNCUL UNTUK MENTOR */}
+                  {userRole !== 'admin' && (
+                    <>
+                      <th className="px-6 py-4 text-xs font-bold uppercase text-emerald-700/70 text-center whitespace-nowrap">Attitude</th>
+                      <th className="px-6 py-4 text-xs font-bold uppercase text-emerald-700/70 text-center whitespace-nowrap">Digitalisasi</th>
+                    </>
+                  )}
+                  
                   <th className="px-6 py-4 text-xs font-bold uppercase text-emerald-700/70 text-center whitespace-nowrap">Drive</th>
                   <th className="px-6 py-4 text-xs font-black uppercase text-emerald-900 bg-emerald-50/80 text-center whitespace-nowrap border-l border-emerald-100">Total Akhir</th>
                   {userRole === 'admin' && <th className="px-6 py-4 text-xs font-bold uppercase text-emerald-700/70 text-center whitespace-nowrap">Aksi</th>}
@@ -648,12 +663,19 @@ export default function MentorDashboard() {
                     <td className="px-6 py-4 text-center">
                       <span className="font-mono font-medium text-emerald-600">{s.poinMingguan > 0 ? s.poinMingguan : <span className="text-emerald-200">—</span>}</span>
                     </td>
-                    <td className="px-6 py-4 text-center">
-                      <ScoreInput value={s.attitude} max={10} onChange={(v) => updateScore(s.id, "attitude", v)} />
-                    </td>
-                    <td className="px-6 py-4 text-center">
-                      <ScoreInput value={s.digitalisasi} max={20} onChange={(v) => updateScore(s.id, "digitalisasi", v)} />
-                    </td>
+                    
+                    {/* INPUT ATTITUDE & DIGITALISASI HANYA MUNCUL UNTUK MENTOR */}
+                    {userRole !== 'admin' && (
+                      <>
+                        <td className="px-6 py-4 text-center">
+                          <ScoreInput value={s.attitude} max={10} onChange={(v) => updateScore(s.id, "attitude", v)} />
+                        </td>
+                        <td className="px-6 py-4 text-center">
+                          <ScoreInput value={s.digitalisasi} max={20} onChange={(v) => updateScore(s.id, "digitalisasi", v)} />
+                        </td>
+                      </>
+                    )}
+
                     <td className="px-6 py-4 text-center">
                       {s.driveLink ? (
                         <a href={s.driveLink} target="_blank" rel="noopener noreferrer" className="text-emerald-600 hover:text-emerald-700 inline-flex items-center gap-1 font-medium underline underline-offset-4 decoration-emerald-200 text-sm whitespace-nowrap"><ExternalLink size={13} /> Drive</a>
@@ -672,6 +694,19 @@ export default function MentorDashboard() {
                     )}
                   </tr>
                 ))}
+
+                {filtered.length === 0 && (
+                  <tr>
+                    <td colSpan={userRole === 'admin' ? 6 : 7} className="px-6 py-16 text-center">
+                      <Users size={32} className="mx-auto text-emerald-200 mb-3" />
+                      <p className="text-sm text-emerald-700/40 font-medium">
+                        {students.length === 0
+                          ? "Data mahasiswa belum tersedia"
+                          : "Tidak ada mahasiswa yang sesuai filter"}
+                      </p>
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>
