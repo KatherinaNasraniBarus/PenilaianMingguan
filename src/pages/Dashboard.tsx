@@ -1,5 +1,6 @@
-import { ChevronRight, Medal, FileText, Link as LinkIcon, ExternalLink, UserCheck } from "lucide-react";
+import { ChevronRight, Medal, FileText, Link as LinkIcon, ExternalLink, UserCheck, History, X, CalendarDays, MapPin, Camera } from "lucide-react";
 import { useEffect, useState } from "react";
+import { motion, AnimatePresence } from "motion/react";
 import logo from "../image/bpjstk.jpeg";
 
 interface Report {
@@ -18,30 +19,38 @@ export default function Dashboard() {
   const [totalPoints, setTotalPoints] = useState(0);
   const [reportCount, setReportCount] = useState(0);
   const [userName, setUserName] = useState("");
+  const [userNim, setUserNim] = useState("");
   const [loading, setLoading] = useState(true);
 
-  // STATE UNTUK PAGINATION
+  // ─── STATE UNTUK PAGINATION (DARI TEMAN) ───
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
+
+  // ─── STATE KHUSUS RIWAYAT ABSENSI (DARI ANDA) ───
+  const [isAbsenModalOpen, setIsAbsenModalOpen] = useState(false);
+  const [absenHistory, setAbsenHistory] = useState<any[]>([]);
+  const [loadingAbsen, setLoadingAbsen] = useState(false);
 
   useEffect(() => {
     const nim = localStorage.getItem("userNim");
     const name = localStorage.getItem("userName");
     
     if (name) setUserName(name);
+    if (nim) setUserNim(nim);
 
     if (nim) {
       fetch(`http://localhost/api-penilaian/get_dashboard_mahasiswa.php?nim=${nim}`)
         .then(res => res.json())
         .then(result => {
           if (result.status === "success") {
-            const reportsData = result.data;
+            const reportsData = result.data; 
             
             let calculatedTotalPoints = 0;
             let calculatedReportCount = reportsData.length; 
             const mappedReports: Report[] = [];
             let reportIdCounter = 1;
 
+            // Kategori aktivitas yang sudah disesuaikan teman Anda
             const activityMap = [
               { key: "kehadiran_seminar", label: "Kehadiran Seminar" },
               { key: "akuisisi_bpu_kepling", label: "Akuisisi BPU Kepling" },
@@ -64,6 +73,7 @@ export default function Dashboard() {
                 const count = Number(dbData[act.key]);
                 if (count > 0) {
                   calculatedTotalPoints += count;
+                  
                   mappedReports.push({
                     id: reportIdCounter++,
                     date: formattedDate,
@@ -90,7 +100,7 @@ export default function Dashboard() {
     }
   }, []);
 
-  // LOGIKA PAGINATION
+  // ─── LOGIKA PAGINATION ───
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentReports = reports.slice(indexOfFirstItem, indexOfLastItem);
@@ -104,26 +114,146 @@ export default function Dashboard() {
     return pages;
   };
 
+  // ─── FUNGSI MENGAMBIL ABSEN ───
+  const fetchAbsenHistory = () => {
+    setIsAbsenModalOpen(true);
+    setLoadingAbsen(true);
+    
+    fetch(`http://localhost/api-penilaian/get_history_absen.php?nim=${userNim}`)
+      .then(res => res.json())
+      .then(result => {
+        if (result.status === "success") {
+          setAbsenHistory(result.data);
+        } else {
+          console.error("Gagal mengambil absen:", result.message);
+        }
+      })
+      .catch(err => console.error("Error API Absen:", err))
+      .finally(() => setLoadingAbsen(false));
+  };
+
   return (
     <div className="flex flex-col min-h-full bg-emerald-50/20">
+
+      {/* ─── MODAL RIWAYAT ABSENSI ─── */}
+      <AnimatePresence>
+        {isAbsenModalOpen && (
+          <motion.div 
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-emerald-950/60 backdrop-blur-sm"
+          >
+            <motion.div 
+              initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-white rounded-3xl w-full max-w-4xl max-h-[85vh] flex flex-col shadow-2xl overflow-hidden"
+            >
+              <div className="px-6 py-5 border-b border-emerald-100 flex justify-between items-center bg-emerald-50/50">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-emerald-600 text-white rounded-lg"><History size={20} /></div>
+                  <h3 className="text-xl font-black text-emerald-950">Riwayat Kehadiran Anda</h3>
+                </div>
+                <button onClick={() => setIsAbsenModalOpen(false)} className="p-2 text-emerald-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all">
+                  <X size={24} />
+                </button>
+              </div>
+
+              <div className="flex-1 overflow-y-auto p-6">
+                {loadingAbsen ? (
+                  <div className="flex flex-col items-center justify-center py-12 text-emerald-600 gap-3">
+                    <div className="w-8 h-8 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin" />
+                    <p className="font-bold animate-pulse">Menarik data dari server absensi...</p>
+                  </div>
+                ) : absenHistory.length === 0 ? (
+                  <div className="text-center py-16">
+                    <CalendarDays size={48} className="mx-auto text-emerald-200 mb-4" />
+                    <p className="text-emerald-900 font-bold text-lg">Belum ada riwayat absensi</p>
+                    <p className="text-emerald-700/60 text-sm mt-1">Anda belum pernah melakukan presensi melalui sistem ini.</p>
+                  </div>
+                ) : (
+                  <div className="border border-emerald-100 rounded-2xl overflow-hidden">
+                    <table className="w-full text-left">
+                      <thead className="bg-emerald-50/50 border-b border-emerald-100">
+                        <tr>
+                          <th className="px-5 py-3 text-xs font-bold text-emerald-700 uppercase tracking-wider">No</th>
+                          <th className="px-5 py-3 text-xs font-bold text-emerald-700 uppercase tracking-wider">Tanggal</th>
+                          <th className="px-5 py-3 text-xs font-bold text-emerald-700 uppercase tracking-wider">Waktu</th>
+                          <th className="px-5 py-3 text-xs font-bold text-emerald-700 uppercase tracking-wider text-center">Bukti Foto</th>
+                          <th className="px-5 py-3 text-xs font-bold text-emerald-700 uppercase tracking-wider text-right">Lokasi Maps</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-emerald-50">
+                        {absenHistory.map((absen, index) => {
+                          const rawTimestamp = absen.timestamp || "";
+                          const parts = rawTimestamp.split(" ");
+                          const tanggal = parts[0] || "-";
+                          const waktu = parts[1] || "-";
+
+                          return (
+                            <tr key={absen.id || index} className="hover:bg-emerald-50/30 transition-colors">
+                              <td className="px-5 py-4 font-bold text-emerald-900">{index + 1}</td>
+                              
+                              <td className="px-5 py-4">
+                                <span className="font-medium text-emerald-900 text-sm">
+                                  {tanggal}
+                                </span>
+                              </td>
+                              
+                              <td className="px-5 py-4">
+                                <span className="font-mono text-emerald-800 text-sm font-bold bg-emerald-100/50 px-2 py-1 rounded">
+                                  {waktu}
+                                </span>
+                              </td>
+
+                              <td className="px-5 py-4 text-center">
+                                <a 
+                                  href={`http://localhost/api-penilaian/view_photo.php?id=${absen.id}`} 
+                                  target="_blank" 
+                                  rel="noopener noreferrer"
+                                  className="inline-flex items-center gap-1.5 text-emerald-600 hover:text-white font-bold text-xs bg-emerald-50 hover:bg-emerald-600 border border-emerald-200 px-3 py-1.5 rounded-lg transition-colors shadow-sm"
+                                >
+                                  <Camera size={14} /> Lihat Foto
+                                </a>
+                              </td>
+
+                              <td className="px-5 py-4 text-right">
+                                {(absen.latitude && absen.longitude) ? (
+                                  <a 
+                                    href={`http://maps.google.com/maps?q=${absen.latitude},${absen.longitude}`} 
+                                    target="_blank" 
+                                    rel="noopener noreferrer"
+                                    className="inline-flex items-center justify-end gap-1.5 text-blue-600 hover:text-white font-bold text-xs bg-blue-50 hover:bg-blue-600 border border-blue-200 px-3 py-1.5 rounded-lg transition-colors shadow-sm"
+                                  >
+                                    <MapPin size={14} /> Google Maps
+                                  </a>
+                                ) : (
+                                  <span className="text-emerald-300 text-xs italic">Lokasi kosong</span>
+                                )}
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+      {/* ─── END MODAL ─── */}
       
       {/* HEADER NAVBAR */}
       <header className="h-16 bg-white border-b border-emerald-100 flex items-center justify-between lg:justify-end px-6 lg:px-8 sticky top-0 z-30 shrink-0 lg:pl-8 pl-16 shadow-sm">
-  <div className="flex lg:hidden items-center h-full">
-    {/* Kotak dihapus, ukuran diatur ke h-10 agar pas */}
-    <img 
-      src={logo} 
-      alt="Logo BPJS TK" 
-      className="h-10 w-auto object-contain" 
-    />
-  </div>
+        <div className="flex lg:hidden items-center h-full">
+          <img src={logo} alt="Logo BPJS TK" className="h-10 w-auto object-contain" />
+        </div>
 
-  <div className="flex items-center gap-2">
-    <span className="text-sm font-medium text-emerald-700/70 hidden sm:inline">Student Portal</span>
-    <ChevronRight size={16} className="text-emerald-200 hidden sm:inline" />
-    <span className="text-sm font-bold text-emerald-900 hidden sm:inline">Overview</span>
-  </div>
-</header>
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-medium text-emerald-700/70 hidden sm:inline">Student Portal</span>
+          <ChevronRight size={16} className="text-emerald-200 hidden sm:inline" />
+          <span className="text-sm font-bold text-emerald-900 hidden sm:inline">Overview</span>
+        </div>
+      </header>
 
       {/* Konten Utama */}
       <div className="p-6 lg:p-8 space-y-6 lg:space-y-8 max-w-7xl mx-auto w-full pb-20">
@@ -137,10 +267,25 @@ export default function Dashboard() {
             <p className="text-emerald-700/60 mt-1 text-sm lg:text-base">Pantau aktivitas dan laporan Anda.</p>
           </div>
           
-          <button className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-xl font-bold transition-all shadow-sm hover:shadow-md active:scale-95 w-full sm:w-auto justify-center">
-            <UserCheck size={20} />
-            <span>Isi Absensi</span>
-          </button>
+          <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto mt-2">
+            <a 
+              href="http://localhost/absensai/" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-xl font-bold transition-all shadow-md active:scale-95 justify-center"
+            >
+              <UserCheck size={20} />
+              <span>Isi Absensi</span>
+            </a>
+            
+            <button 
+              onClick={fetchAbsenHistory}
+              className="flex items-center gap-2 bg-white text-emerald-700 border border-emerald-200 hover:bg-emerald-50 px-5 py-2.5 rounded-xl font-bold transition-all shadow-sm active:scale-95 justify-center"
+            >
+              <History size={20} />
+              <span>Riwayat Absensi</span>
+            </button>
+          </div>
         </div>
 
         {/* STATS CARDS */}
