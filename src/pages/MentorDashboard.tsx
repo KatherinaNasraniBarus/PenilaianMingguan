@@ -2,7 +2,7 @@ import React, { useState, useCallback, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   ChevronRight, ChevronDown, Download, ExternalLink, Users, 
-  CheckCircle2, Clock, Trash2, UserPlus, ShieldAlert, X, Key, Copy, GraduationCap, AlertCircle, Mail
+  CheckCircle2, Clock, Trash2, UserPlus, ShieldAlert, X, Key, Copy, GraduationCap, AlertCircle, Mail, MessageCircle
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import logo from "../image/logobpjss.png";
@@ -554,6 +554,16 @@ export default function MentorDashboard() {
 
           {userRole === 'admin' && (
             <div className="flex gap-2">
+              {/* TOMBOL BARU UNTUK BOT WHATSAPP */}
+              <a 
+                href="http://localhost:3000/" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-xl font-bold transition-all shadow-sm text-sm"
+              >
+                <MessageCircle size={16} /> Bot WhatsApp
+              </a>
+              
               <button onClick={openMentorModal} className="flex items-center gap-2 bg-white text-emerald-700 border border-emerald-200 hover:bg-emerald-50 px-4 py-2 rounded-xl font-bold transition-all shadow-sm text-sm">
                 <Users size={16} /> Kelola Mentor
               </button>
