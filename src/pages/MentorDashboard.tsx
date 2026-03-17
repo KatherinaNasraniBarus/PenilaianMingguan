@@ -2,7 +2,7 @@ import React, { useState, useCallback, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   ChevronRight, ChevronDown, Download, ExternalLink, Users, 
-  CheckCircle2, Clock, Trash2, UserPlus, ShieldAlert, X, Key, Copy, GraduationCap, AlertCircle, Mail, MessageCircle, CalendarClock, Save
+  CheckCircle2, Clock, Trash2, UserPlus, ShieldAlert, X, Key, Copy, GraduationCap, AlertCircle, Mail, MessageCircle, CalendarClock, Save, History, MapPin, Camera, CalendarDays
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import logo from "../image/bpjstk.jpeg"; 
@@ -56,6 +56,12 @@ export default function MentorDashboard() {
   const [deadlines, setDeadlines] = useState<Record<string, string>>({});
   const [savingDeadline, setSavingDeadline] = useState<string | null>(null);
 
+  // ─── STATE KHUSUS RIWAYAT ABSENSI MAHASISWA ───
+  const [isAbsenModalOpen, setIsAbsenModalOpen] = useState(false);
+  const [absenHistory, setAbsenHistory] = useState<any[]>([]);
+  const [loadingAbsen, setLoadingAbsen] = useState(false);
+  const [selectedStudentForAbsen, setSelectedStudentForAbsen] = useState<{nim: string, nama: string} | null>(null);
+
   // STATE KELOLA MENTOR
   const [isMentorModalOpen, setIsMentorModalOpen] = useState(false);
   const [mentorList, setMentorList] = useState<{id: number, nama: string, username: string}[]>([]);
@@ -100,8 +106,30 @@ export default function MentorDashboard() {
       })
       .catch((err) => console.error("Error fetching data:", err));
       
-    fetchDeadlines(); // Tarik data deadline saat komponen dimuat
+    fetchDeadlines(); 
   }, [navigate, selectedWeek, refreshTrigger, fetchDeadlines]); 
+
+  // FUNGSI MELIHAT RIWAYAT ABSEN MAHASISWA
+  const handleViewAbsen = (nim: string, nama: string) => {
+    setSelectedStudentForAbsen({ nim, nama });
+    setIsAbsenModalOpen(true);
+    setLoadingAbsen(true);
+    
+    fetch(`http://localhost/api-penilaian/get_history_absen.php?nim=${nim}`)
+      .then(res => res.json())
+      .then(result => {
+        if (result.status === "success") {
+          setAbsenHistory(result.data);
+        } else {
+          setAbsenHistory([]);
+        }
+      })
+      .catch(err => {
+        console.error("Error API Absen:", err);
+        setAbsenHistory([]);
+      })
+      .finally(() => setLoadingAbsen(false));
+  };
 
   const handleSaveDeadline = async (minggu: string, tanggal: string) => {
     if (!tanggal) {
@@ -260,6 +288,90 @@ export default function MentorDashboard() {
   return (
     <div className="flex flex-col min-h-full bg-emerald-50/20">
 
+      {/* ─── MODAL RIWAYAT ABSENSI (UNTUK MENTOR/ADMIN) ─── */}
+      <AnimatePresence>
+        {isAbsenModalOpen && (
+          <motion.div 
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-emerald-950/60 backdrop-blur-sm"
+          >
+            <motion.div 
+              initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-white rounded-3xl w-full max-w-4xl max-h-[85vh] flex flex-col shadow-2xl overflow-hidden"
+            >
+              <div className="px-6 py-5 border-b border-emerald-100 flex justify-between items-center bg-emerald-50/50">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-emerald-600 text-white rounded-lg"><History size={20} /></div>
+                  <h3 className="text-xl font-black text-emerald-950">
+                    Riwayat Kehadiran: <span className="text-emerald-700">{selectedStudentForAbsen?.nama}</span>
+                  </h3>
+                </div>
+                <button onClick={() => setIsAbsenModalOpen(false)} className="p-2 text-emerald-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all">
+                  <X size={24} />
+                </button>
+              </div>
+
+              <div className="flex-1 overflow-y-auto p-6">
+                {loadingAbsen ? (
+                  <div className="flex flex-col items-center justify-center py-12 text-emerald-600 gap-3">
+                    <div className="w-8 h-8 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin" />
+                    <p className="font-bold animate-pulse">Menarik data dari server absensi...</p>
+                  </div>
+                ) : absenHistory.length === 0 ? (
+                  <div className="text-center py-16">
+                    <CalendarDays size={48} className="mx-auto text-emerald-200 mb-4" />
+                    <p className="text-emerald-900 font-bold text-lg">Belum ada riwayat absensi</p>
+                    <p className="text-emerald-700/60 text-sm mt-1">Mahasiswa ini belum pernah melakukan presensi masuk.</p>
+                  </div>
+                ) : (
+                  <div className="border border-emerald-100 rounded-2xl overflow-hidden">
+                    <table className="w-full text-left">
+                      <thead className="bg-emerald-50/50 border-b border-emerald-100">
+                        <tr>
+                          <th className="px-5 py-3 text-xs font-bold text-emerald-700 uppercase tracking-wider">No</th>
+                          <th className="px-5 py-3 text-xs font-bold text-emerald-700 uppercase tracking-wider">Tanggal</th>
+                          <th className="px-5 py-3 text-xs font-bold text-emerald-700 uppercase tracking-wider">Waktu</th>
+                          <th className="px-5 py-3 text-xs font-bold text-emerald-700 uppercase tracking-wider text-center">Bukti Foto</th>
+                          <th className="px-5 py-3 text-xs font-bold text-emerald-700 uppercase tracking-wider text-right">Lokasi Maps</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-emerald-50">
+                        {absenHistory.map((absen, index) => {
+                          const rawTimestamp = absen.timestamp || "";
+                          const parts = rawTimestamp.split(" ");
+                          const tanggal = parts[0] || "-";
+                          const waktu = parts[1] || "-";
+
+                          return (
+                            <tr key={absen.id || index} className="hover:bg-emerald-50/30 transition-colors">
+                              <td className="px-5 py-4 font-bold text-emerald-900">{index + 1}</td>
+                              <td className="px-5 py-4"><span className="font-medium text-emerald-900 text-sm">{tanggal}</span></td>
+                              <td className="px-5 py-4"><span className="font-mono text-emerald-800 text-sm font-bold bg-emerald-100/50 px-2 py-1 rounded">{waktu}</span></td>
+                              <td className="px-5 py-4 text-center">
+                                <a href={`http://localhost/api-penilaian/view_photo.php?id=${absen.id}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-emerald-600 hover:text-white font-bold text-xs bg-emerald-50 hover:bg-emerald-600 border border-emerald-200 px-3 py-1.5 rounded-lg transition-colors shadow-sm">
+                                  <Camera size={14} /> Lihat Foto
+                                </a>
+                              </td>
+                              <td className="px-5 py-4 text-right">
+                                {(absen.latitude && absen.longitude) ? (
+                                  <a href={`http://maps.google.com/maps?q=${absen.latitude},${absen.longitude}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-end gap-1.5 text-blue-600 hover:text-white font-bold text-xs bg-blue-50 hover:bg-blue-600 border border-blue-200 px-3 py-1.5 rounded-lg transition-colors shadow-sm">
+                                    <MapPin size={14} /> Google Maps
+                                  </a>
+                                ) : (<span className="text-emerald-300 text-xs italic">Lokasi kosong</span>)}
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* ─── MODAL ATUR DEADLINE ─── */}
       <AnimatePresence>
         {isDeadlineModalOpen && (
@@ -304,7 +416,7 @@ export default function MentorDashboard() {
         )}
       </AnimatePresence>
 
-      {/* ─── MODAL KELOLA MENTOR (Disembunyikan demi keringkasan kode, format sama seperti sebelumnya) ─── */}
+      {/* ─── MODAL KELOLA MENTOR (Diringkas agar tidak memakan ruang) ─── */}
       <AnimatePresence>
         {isMentorModalOpen && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-emerald-950/60 backdrop-blur-sm">
@@ -382,7 +494,7 @@ export default function MentorDashboard() {
         )}
       </AnimatePresence>
 
-      {/* ─── MODAL KELOLA MAHASISWA ─── */}
+      {/* ─── MODAL KELOLA MAHASISWA (Diringkas agar tidak memakan ruang) ─── */}
       <AnimatePresence>
         {isStudentModalOpen && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-emerald-950/60 backdrop-blur-sm">
@@ -501,7 +613,6 @@ export default function MentorDashboard() {
             </p>
           </div>
 
-          {/* ─── DERETAN TOMBOL ADMIN (TERMASUK TOMBOL DEADLINE) ─── */}
           {userRole === 'admin' && (
             <div className="flex gap-2 flex-wrap justify-end">
               <button onClick={() => setIsDeadlineModalOpen(true)} className="flex items-center gap-2 bg-rose-500 hover:bg-rose-600 text-white px-4 py-2 rounded-xl font-bold transition-all shadow-sm text-sm">
@@ -542,7 +653,6 @@ export default function MentorDashboard() {
           <div className="px-4 lg:px-6 py-4 border-b border-emerald-100 bg-emerald-50/10">
             <div className="flex items-center gap-3 overflow-x-auto pb-1">
               
-              {/* INFO DEADLINE TAMPIL DI SEBELAH PILIHAN MINGGU */}
               <div className="flex flex-col">
                 <div className="relative shrink-0">
                   <select value={selectedWeek} onChange={(e) => setSelectedWeek(e.target.value)} className="appearance-none pl-3 pr-8 py-1.5 text-sm font-semibold text-emerald-800 bg-white border border-emerald-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-400 cursor-pointer">
@@ -580,6 +690,10 @@ export default function MentorDashboard() {
                 <tr className="bg-emerald-50/50 border-b border-emerald-100">
                   <th className="px-6 py-4 text-xs font-bold uppercase text-emerald-700/70 whitespace-nowrap">Mahasiswa</th>
                   <th className="px-6 py-4 text-xs font-bold uppercase text-emerald-700/70 whitespace-nowrap">Status</th>
+                  
+                  {/* ─── KOLOM BARU ABSENSI ─── */}
+                  <th className="px-6 py-4 text-xs font-bold uppercase text-emerald-700/70 text-center whitespace-nowrap">Absensi</th>
+
                   <th className="px-6 py-4 text-xs font-bold uppercase text-emerald-700/70 text-center whitespace-nowrap">Poin Aktivitas</th>
                   
                   {userRole !== 'admin' && (
@@ -598,7 +712,7 @@ export default function MentorDashboard() {
               <tbody className="divide-y divide-emerald-50">
                 {currentStudents.length === 0 ? (
                   <tr>
-                    <td colSpan={userRole === 'admin' ? 6 : 7} className="px-6 py-16 text-center">
+                    <td colSpan={userRole === 'admin' ? 7 : 8} className="px-6 py-16 text-center">
                       <Users size={32} className="mx-auto text-emerald-200 mb-3" />
                       <p className="text-sm text-emerald-700/40 font-medium">
                         {students.length === 0 ? "Data mahasiswa belum tersedia" : "Tidak ada mahasiswa yang sesuai filter"}
@@ -619,6 +733,7 @@ export default function MentorDashboard() {
                           )}
                         </div>
                       </td>
+                      
                       <td className="px-6 py-4">
                         {s.status === "sudah" ? (
                           <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-700 whitespace-nowrap"><CheckCircle2 size={11} /> Sudah</span>
@@ -626,6 +741,17 @@ export default function MentorDashboard() {
                           <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-red-50 text-red-500 whitespace-nowrap"><Clock size={11} /> Belum</span>
                         )}
                       </td>
+
+                      {/* ─── TOMBOL CEK ABSENSI ─── */}
+                      <td className="px-6 py-4 text-center">
+                        <button 
+                          onClick={() => handleViewAbsen(s.nim, s.nama)}
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 hover:bg-emerald-600 text-emerald-600 hover:text-white border border-emerald-200 rounded-lg text-xs font-bold transition-colors shadow-sm whitespace-nowrap"
+                        >
+                          <History size={14} /> Cek Kehadiran
+                        </button>
+                      </td>
+
                       <td className="px-6 py-4 text-center">
                         <span className="font-mono font-medium text-emerald-600">{s.poinMingguan > 0 ? s.poinMingguan : <span className="text-emerald-200">—</span>}</span>
                       </td>
@@ -664,7 +790,6 @@ export default function MentorDashboard() {
             </table>
           </div>
 
-          {/* ─── FOOTER PAGINATION ─── */}
           <div className="px-4 lg:px-6 py-4 border-t border-emerald-100 text-xs lg:text-sm text-emerald-700/60 flex flex-col sm:flex-row justify-between items-center gap-4 bg-emerald-50/10">
             <span>
               Menampilkan {filteredStudents.length > 0 ? indexOfFirstItem + 1 : 0} - {Math.min(indexOfLastItem, filteredStudents.length)} dari {filteredStudents.length} data
