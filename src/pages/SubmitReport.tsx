@@ -7,8 +7,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import logo from "../image/bpjstk.jpeg";
 
-const PROGRAM_START_DATE = new Date("2026-03-02T00:00:00");
-
 export default function SubmitReport() {
   const navigate = useNavigate();
   
@@ -20,6 +18,7 @@ export default function SubmitReport() {
   
   // Logic Status Laporan
   const [currentWeekName, setCurrentWeekName] = useState("Minggu 1");
+  const [deadlineText, setDeadlineText] = useState("Sabtu 23:59"); 
   const [isDeadlinePassed, setIsDeadlinePassed] = useState(false);
   const [alreadySubmitted, setAlreadySubmitted] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
@@ -28,57 +27,112 @@ export default function SubmitReport() {
   const [existingDriveLink, setExistingDriveLink] = useState("");
   
   const [formData, setFormData] = useState({
-    nama: "", seminar: "", pu: "", bpu: "", sosialisasi: "",
+    nama: "", seminar: "", bpu_kepling: "", bpu_keluarga: "", sosialisasi: "",
     video: "", administrasi: "", kunjunganPu: "", kunjunganBpu: "", drive: ""
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
-    // 1. Hitung Minggu Berjalan
-    const today = new Date();
-    const diffTime = today.getTime() - PROGRAM_START_DATE.getTime();
-    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-    let weekNumber = Math.floor(diffDays / 7) + 1;
-    if (weekNumber < 1) weekNumber = 1; 
-    const weekName = `Minggu ${weekNumber}`;
-    setCurrentWeekName(weekName);
-
-    // 2. Cek Deadline (Minggu ditutup)
-    if (today.getDay() === 0) setIsDeadlinePassed(true);
-
-    // 3. Ambil Data Mahasiswa & Histori
     const storedNim = localStorage.getItem("userNim");
     const storedName = localStorage.getItem("userName");
 
-    if (storedNim && storedName) {
-      setStudentData({ nim: storedNim, nama: storedName });
-      setFormData(prev => ({ ...prev, nama: storedName }));
-
-      fetch(`http://localhost/api-penilaian/get_dashboard_mahasiswa.php?nim=${storedNim}`)
-        .then(res => res.json())
-        .then(result => {
-          if (result.status === "success" && result.data.length > 0) {
-            // Ambil link drive dari database jika sudah pernah isi sebelumnya
-            const savedLink = result.data[0].link_drive;
-            if (savedLink) {
-              setExistingDriveLink(savedLink);
-              setFormData(prev => ({ ...prev, drive: savedLink }));
-            }
-
-            // Cek apakah sudah submit untuk minggu ini
-            const hasSubmittedThisWeek = result.data.some((l: any) => l.minggu === weekName);
-            if (hasSubmittedThisWeek) setAlreadySubmitted(true);
-          }
-        })
-        .finally(() => setCheckingStatus(false));
-    } else {
+    if (!storedNim || !storedName) {
       navigate("/");
+      return;
     }
+
+    setStudentData({ nim: storedNim, nama: storedName });
+    setFormData(prev => ({ ...prev, nama: storedName }));
+
+    const loadDynamicData = async () => {
+      try {
+        const [resWeeks, resDl] = await Promise.all([
+          fetch("http://localhost/api-penilaian/manage_minggu.php"),
+          fetch("http://localhost/api-penilaian/manage_deadlines.php")
+        ]);
+        
+        const dataWeeks = await resWeeks.json();
+        const dataDl = await resDl.json();
+        
+        let loadedWeeks = ["Minggu 1"];
+        if (dataWeeks.status === "success" && dataWeeks.data.length > 0) {
+          loadedWeeks = dataWeeks.data;
+        }
+        
+        let loadedDl: Record<string, string> = {};
+        if (dataDl.status === "success") {
+          loadedDl = dataDl.data;
+        }
+
+        let activeWeek = loadedWeeks[0];
+        const today = new Date();
+        today.setHours(0, 0, 0, 0); 
+
+        for (let i = 0; i < loadedWeeks.length; i++) {
+          const weekName = loadedWeeks[i];
+          const dlDateString = loadedDl[weekName];
+
+          if (dlDateString) {
+            const dlDate = new Date(dlDateString);
+            dlDate.setHours(23, 59, 59, 999); 
+
+            if (today.getTime() > dlDate.getTime()) {
+              if (i + 1 < loadedWeeks.length) {
+                activeWeek = loadedWeeks[i + 1];
+              } else {
+                activeWeek = weekName; 
+              }
+            } else {
+              activeWeek = weekName;
+              break;
+            }
+          }
+        }
+
+        setCurrentWeekName(activeWeek);
+
+        if (loadedDl[activeWeek]) {
+          const activeDlDate = new Date(loadedDl[activeWeek]);
+          const hari = activeDlDate.toLocaleDateString('id-ID', { weekday: 'long' });
+          const tgl = activeDlDate.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
+          setDeadlineText(`${hari}, ${tgl} 23:59`);
+          
+          activeDlDate.setHours(23, 59, 59, 999);
+          if (new Date().getTime() > activeDlDate.getTime()) {
+            setIsDeadlinePassed(true);
+          }
+        } else {
+          if (today.getDay() === 0) setIsDeadlinePassed(true);
+        }
+
+        const resHist = await fetch(`http://localhost/api-penilaian/get_dashboard_mahasiswa.php?nim=${storedNim}`);
+        const result = await resHist.json();
+
+        if (result.status === "success" && result.data.length > 0) {
+          const savedLink = result.data[0].link_drive;
+          if (savedLink) {
+            setExistingDriveLink(savedLink);
+            setFormData(prev => ({ ...prev, drive: savedLink }));
+          }
+
+          const hasSubmittedThisWeek = result.data.some((l: any) => l.minggu === activeWeek);
+          if (hasSubmittedThisWeek) setAlreadySubmitted(true);
+        }
+
+      } catch (error) {
+        console.error("Gagal menarik data:", error);
+      } finally {
+        setCheckingStatus(false);
+      }
+    };
+
+    loadDynamicData();
   }, [navigate]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+    // Menghapus error merah saat user mulai mengetik ulang
     setErrors({ ...errors, [e.target.name]: "" });
   };
 
@@ -89,26 +143,30 @@ export default function SubmitReport() {
 
     // Validasi
     Object.keys(formData).forEach((key) => {
-      if (!formData[key as keyof typeof formData]) newErrors[key] = "Wajib diisi";
+      const skippedFields = ["video", "kunjunganPu", "kunjunganBpu"];
+      if (!skippedFields.includes(key) && !formData[key as keyof typeof formData]) {
+        newErrors[key] = "Wajib diisi";
+      }
     });
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
+      // Notifikasi opsional jika ada field kosong
+      setSubmitError("Mohon lengkapi semua kolom yang ditandai merah.");
       return;
     }
 
     setIsSubmitting(true);
     const payload = {
-    nim: studentData?.nim,
-    minggu: currentWeekName,
-    kehadiran_seminar: formData.seminar,
-    akuisisi_bpu_kepling: formData.bpu_kepling, // Field Baru
-    akuisisi_bpu_keluarga: formData.bpu_keluarga, // Field Baru
-    jumlah_sosialisasi: formData.sosialisasi,
-
-    administrasi: formData.administrasi,
-    link_drive: formData.drive
-  };
+      nim: studentData?.nim,
+      minggu: currentWeekName,
+      kehadiran_seminar: formData.seminar,
+      akuisisi_bpu_kepling: formData.bpu_kepling, 
+      akuisisi_bpu_keluarga: formData.bpu_keluarga, 
+      jumlah_sosialisasi: formData.sosialisasi,
+      administrasi: formData.administrasi,
+      link_drive: formData.drive
+    };
 
     try {
       const response = await fetch("http://localhost/api-penilaian/submit_laporan.php", {
@@ -120,7 +178,7 @@ export default function SubmitReport() {
       
       if (result.status === "success") {
         setAlreadySubmitted(true);
-        setShowSuccessModal(true); // Memunculkan Pop-up
+        setShowSuccessModal(true); 
       } else {
         setSubmitError(result.message || "Gagal mengirim laporan.");
       }
@@ -136,7 +194,6 @@ export default function SubmitReport() {
   return (
     <div className="flex flex-col min-h-screen bg-emerald-50/20">
       
-      {/* ─── MODAL SUKSES (Z-INDEX 9999) ─── */}
       <AnimatePresence>
         {showSuccessModal && (
           <motion.div 
@@ -172,21 +229,15 @@ export default function SubmitReport() {
       </AnimatePresence>
 
       <header className="h-16 bg-white border-b border-emerald-100 flex items-center justify-between lg:justify-end px-6 lg:px-8 sticky top-0 z-30 shrink-0 lg:pl-8 pl-16 shadow-sm">
-  <div className="flex lg:hidden items-center h-full">
-    {/* Kotak dihapus, ukuran diatur ke h-10 agar pas */}
-    <img 
-      src={logo} 
-      alt="Logo BPJS TK" 
-      className="h-10 w-auto object-contain" 
-    />
-  </div>
-
-  <div className="flex items-center gap-2">
-    <span className="text-sm font-medium text-emerald-700/70 hidden sm:inline">Student Portal</span>
-    <ChevronRight size={16} className="text-emerald-200 hidden sm:inline" />
-    <span className="text-sm font-bold text-emerald-900 hidden sm:inline">Overview</span>
-  </div>
-</header>
+        <div className="flex lg:hidden items-center h-full">
+          <img src={logo} alt="Logo BPJS TK" className="h-10 w-auto object-contain" />
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-medium text-emerald-700/70 hidden sm:inline">Student Portal</span>
+          <ChevronRight size={16} className="text-emerald-200 hidden sm:inline" />
+          <span className="text-sm font-bold text-emerald-900 hidden sm:inline">Overview</span>
+        </div>
+      </header>
 
       <main className="flex-1 p-6 max-w-4xl mx-auto w-full pb-20">
         <div className="mb-8">
@@ -196,7 +247,7 @@ export default function SubmitReport() {
                 {currentWeekName}
              </div>
              <div className="bg-emerald-50 border border-emerald-100 px-4 py-1.5 rounded-full text-xs font-bold text-emerald-700 shadow-sm">
-                Deadline: Sabtu 23:59
+                Deadline: {deadlineText}
              </div>
           </div>
         </div>
@@ -228,30 +279,41 @@ export default function SubmitReport() {
               <div className="p-2 bg-emerald-50 rounded-lg text-emerald-600"><Activity size={20} /></div>
               <h3 className="text-lg font-bold text-emerald-900">Aktivitas Mingguan</h3>
             </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-          {[
-            { label: "Kehadiran Seminar", name: "seminar" },
-            { label: "Akuisisi BPU Kepling", name: "bpu_kepling" },
-            { label: "Akuisisi BPU Keluarga", name: "bpu_keluarga" },
-            { label: "Jumlah Sosialisasi", name: "sosialisasi" },
-            { label: "Administrasi dan Laporan", name: "administrasi" },
-          ].map((item) => (
-            <div key={item.name}>
-              <label className="text-xs font-bold text-emerald-800 ml-1">{item.label}</label>
-              <input 
-                type="number" 
-                name={item.name} 
-                value={formData[item.name as keyof typeof formData] || ""} 
-                onChange={handleChange} 
-                disabled={isFormLocked}
-                className="w-full mt-1 border border-emerald-100 bg-emerald-50/30 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-emerald-500 disabled:opacity-50" 
-              />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              {[
+                { label: "Kehadiran Seminar", name: "seminar" },
+                { label: "Akuisisi BPU Kepling", name: "bpu_kepling" },
+                { label: "Akuisisi BPU Keluarga", name: "bpu_keluarga" },
+                { label: "Jumlah Sosialisasi", name: "sosialisasi" },
+                { label: "Administrasi dan Laporan", name: "administrasi" },
+              ].map((item) => (
+                <div key={item.name}>
+                  <label className={`text-xs font-bold ml-1 ${errors[item.name] ? 'text-red-600' : 'text-emerald-800'}`}>
+                    {item.label}
+                  </label>
+                  <input 
+                    type="number" 
+                    name={item.name} 
+                    value={formData[item.name as keyof typeof formData] || ""} 
+                    onChange={handleChange} 
+                    disabled={isFormLocked}
+                    className={`w-full mt-1 border rounded-xl px-4 py-3 outline-none focus:ring-2 transition-all disabled:opacity-50 ${
+                      errors[item.name] 
+                        ? 'border-red-400 bg-red-50 focus:ring-red-500 text-red-900' 
+                        : 'border-emerald-100 bg-emerald-50/30 focus:ring-emerald-500'
+                    }`} 
+                  />
+                  {errors[item.name] && (
+                    <span className="text-[11px] font-bold text-red-500 ml-1 flex items-center gap-1 mt-1.5">
+                      <AlertCircle size={12} /> {errors[item.name]}
+                    </span>
+                  )}
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
           </section>
 
-          {/* Section Link Evidence (LOGIKA KUNCI LINK) */}
+          {/* Section Link Evidence */}
           <section className={`bg-white p-8 rounded-2xl border ${isFormLocked && !existingDriveLink ? 'opacity-50' : 'border-emerald-100 shadow-sm'}`}>
             <div className="flex items-center gap-3 mb-6">
               <div className="p-2 bg-emerald-50 rounded-lg text-emerald-600"><LinkIcon size={20} /></div>
@@ -259,10 +321,11 @@ export default function SubmitReport() {
             </div>
             
             <div className="space-y-2">
-              <label className="text-sm font-bold text-emerald-700 ml-1">Google Drive Link</label>
+              <label className={`text-sm font-bold ml-1 ${errors.drive ? 'text-red-600' : 'text-emerald-700'}`}>
+                Google Drive Link
+              </label>
               
               {existingDriveLink ? (
-                /* Jika Link sudah ada dari laporan sebelumnya, kunci tampilannya */
                 <div className="flex items-center justify-between p-4 bg-emerald-50 border border-emerald-200 rounded-xl">
                   <div className="flex items-center gap-3 truncate">
                     <CheckCircle size={18} className="text-emerald-500 shrink-0" />
@@ -270,15 +333,25 @@ export default function SubmitReport() {
                   </div>
                 </div>
               ) : (
-                /* Jika ini laporan pertama mahasiswa */
-                <input
-                  type="url" name="drive"
-                  value={formData.drive}
-                  onChange={handleChange}
-                  disabled={isFormLocked}
-                  placeholder="https://drive.google.com/..."
-                  className={`w-full border rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-emerald-500 ${errors.drive ? 'border-red-300 bg-red-50' : 'border-emerald-100 bg-emerald-50/30'}`}
-                />
+                <>
+                  <input
+                    type="url" name="drive"
+                    value={formData.drive}
+                    onChange={handleChange}
+                    disabled={isFormLocked}
+                    placeholder="https://drive.google.com/..."
+                    className={`w-full border rounded-xl px-4 py-3 outline-none focus:ring-2 transition-all ${
+                      errors.drive 
+                        ? 'border-red-400 bg-red-50 focus:ring-red-500 text-red-900' 
+                        : 'border-emerald-100 bg-emerald-50/30 focus:ring-emerald-500'
+                    }`}
+                  />
+                  {errors.drive && (
+                    <span className="text-[11px] font-bold text-red-500 ml-1 flex items-center gap-1 mt-1.5">
+                      <AlertCircle size={12} /> {errors.drive}
+                    </span>
+                  )}
+                </>
               )}
               <p className="text-[11px] text-emerald-600/60 italic mt-2">
                 * Link Google Drive hanya diinput sekali pada laporan pertama.
