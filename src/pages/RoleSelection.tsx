@@ -61,7 +61,6 @@ export default function RoleSelection() {
       </div>
 
       <p className="mt-16 text-emerald-700/40 text-xs font-bold tracking-widest uppercase">
-        © 2026 Student Portal System
       </p>
     </div>
   );
