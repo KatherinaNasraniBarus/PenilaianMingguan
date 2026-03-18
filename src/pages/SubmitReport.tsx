@@ -48,8 +48,8 @@ export default function SubmitReport() {
     const loadDynamicData = async () => {
       try {
         const [resWeeks, resDl] = await Promise.all([
-          fetch("http://localhost/api-penilaian/manage_minggu.php"),
-          fetch("http://localhost/api-penilaian/manage_deadlines.php")
+          fetch("https://api-penilaian.vercel.app/manage_minggu.php"),
+          fetch("https://api-penilaian.vercel.app/manage_deadlines.php")
         ]);
         
         const dataWeeks = await resWeeks.json();
@@ -106,7 +106,7 @@ export default function SubmitReport() {
           if (today.getDay() === 0) setIsDeadlinePassed(true);
         }
 
-        const resHist = await fetch(`http://localhost/api-penilaian/get_dashboard_mahasiswa.php?nim=${storedNim}`);
+        const resHist = await fetch(`https://api-penilaian.vercel.app/get_dashboard_mahasiswa.php?nim=${storedNim}`);
         const result = await resHist.json();
 
         if (result.status === "success" && result.data.length > 0) {
@@ -169,7 +169,7 @@ export default function SubmitReport() {
     };
 
     try {
-      const response = await fetch("http://localhost/api-penilaian/submit_laporan.php", {
+      const response = await fetch("https://api-penilaian.vercel.app/submit_laporan.php", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),

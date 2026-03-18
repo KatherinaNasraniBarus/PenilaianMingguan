@@ -39,7 +39,7 @@ export default function Dashboard() {
     if (nim) setUserNim(nim);
 
     if (nim) {
-      fetch(`http://localhost/api-penilaian/get_dashboard_mahasiswa.php?nim=${nim}`)
+      fetch(`https://api-penilaian.vercel.app/get_dashboard_mahasiswa.php?nim=${nim}`)
         .then(res => res.json())
         .then(result => {
           if (result.status === "success") {

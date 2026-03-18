@@ -82,7 +82,7 @@ export default function MentorDashboard() {
 
   // FUNGSI FETCH
   const fetchWeeks = useCallback(() => {
-    fetch("http://localhost/api-penilaian/manage_minggu.php")
+    fetch("https://api-penilaian.vercel.app/manage_minggu.php")
       .then(res => res.json())
       .then(data => { 
         if (data.status === "success") {
@@ -94,7 +94,7 @@ export default function MentorDashboard() {
   }, [selectedWeek]);
 
   const fetchDeadlines = useCallback(() => {
-    fetch("http://localhost/api-penilaian/manage_deadlines.php")
+    fetch("https://api-penilaian.vercel.app/manage_deadlines.php")
       .then(res => res.json())
       .then(data => { if (data.status === "success") setDeadlines(data.data); })
       .catch(err => console.error("Gagal mengambil deadline:", err));
@@ -110,7 +110,7 @@ export default function MentorDashboard() {
     setMentorName(mentor.nama.split(" ")[0]);
     setUserRole(mentor.role || "mentor");
 
-    fetch(`http://localhost/api-penilaian/get_mahasiswa_by_mentor.php?mentor_id=${mentor.id}&minggu=${encodeURIComponent(selectedWeek)}`)
+    fetch(`https://api-penilaian.vercel.app/get_mahasiswa_by_mentor.php?mentor_id=${mentor.id}&minggu=${encodeURIComponent(selectedWeek)}`)
       .then((res) => res.json())
       .then((data) => {
         if (data.status === "success") { setStudents(data.data); setCurrentPage(1); }
@@ -124,7 +124,7 @@ export default function MentorDashboard() {
     if (!newWeekInput.trim()) return;
     setIsAddingWeek(true);
     try {
-      const res = await fetch("http://localhost/api-penilaian/manage_minggu.php", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ nama_minggu: newWeekInput.trim() }) });
+      const res = await fetch("https://api-penilaian.vercel.app/manage_minggu.php", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ nama_minggu: newWeekInput.trim() }) });
       const result = await res.json();
       if (result.status === "success") { setNewWeekInput(""); fetchWeeks(); } else alert(result.message);
     } catch (err) { alert("Kesalahan koneksi ke server."); } finally { setIsAddingWeek(false); }
@@ -134,7 +134,7 @@ export default function MentorDashboard() {
     if (!tanggal) { alert("Silakan pilih tanggal!"); return; }
     setSavingDeadline(minggu);
     try {
-      const response = await fetch("http://localhost/api-penilaian/manage_deadlines.php", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ minggu, tanggal_deadline: tanggal }) });
+      const response = await fetch("https://api-penilaian.vercel.app/manage_deadlines.php", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ minggu, tanggal_deadline: tanggal }) });
       const result = await response.json();
       if(result.status === "success") fetchDeadlines(); else alert("Gagal menyimpan: " + result.message);
     } catch (err) { alert("Kesalahan koneksi."); } finally { setSavingDeadline(null); }
@@ -147,12 +147,12 @@ export default function MentorDashboard() {
       .catch(err => { console.error("Error API Absen:", err); setAbsenHistory([]); }).finally(() => setLoadingAbsen(false));
   };
 
-  const fetchMentors = () => { fetch("http://localhost/api-penilaian/get_mentors.php").then(res => res.json()).then(data => { if(data.status === "success") setMentorList(data.data); }); };
+  const fetchMentors = () => { fetch("https://api-penilaian.vercel.app/get_mentors.php").then(res => res.json()).then(data => { if(data.status === "success") setMentorList(data.data); }); };
   const openMentorModal = () => { setIsMentorModalOpen(true); setNewAccountInfo(null); setNewMentorName(""); fetchMentors(); };
   const handleAddMentor = async (e: React.FormEvent) => {
     e.preventDefault(); if(!newMentorName.trim()) return; setIsAddingMentor(true);
     try {
-      const response = await fetch("http://localhost/api-penilaian/add_mentor.php", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ nama: newMentorName }) });
+      const response = await fetch("https://api-penilaian.vercel.app/add_mentor.php", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ nama: newMentorName }) });
       const result = await response.json();
       if(result.status === "success") { setNewAccountInfo({ username: result.data.username, password: result.data.password }); setNewMentorName(""); fetchMentors(); } else alert("Gagal: " + result.message);
     } catch (err) { alert("Kesalahan koneksi."); } finally { setIsAddingMentor(false); }
@@ -160,7 +160,7 @@ export default function MentorDashboard() {
   const handleDeleteMentor = async (id: number, nama: string) => {
     if(window.confirm(`YAKIN INGIN MENGHAPUS MENTOR "${nama}"?`)) {
       try {
-        const res = await fetch("http://localhost/api-penilaian/delete_mentor.php", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id }) });
+        const res = await fetch("https://api-penilaian.vercel.app/delete_mentor.php", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id }) });
         const result = await res.json(); if(result.status === "success") fetchMentors();
       } catch (err) { alert("Kesalahan koneksi."); }
     }
@@ -177,7 +177,7 @@ export default function MentorDashboard() {
     if (Object.keys(errors).length > 0) { setStudentFormErrors(errors); return; }
     setStudentFormErrors({}); setIsAddingStudent(true);
     try {
-      const response = await fetch("http://localhost/api-penilaian/add_mahasiswa.php", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ nama: newStudentName, nim: newStudentNim, email: newStudentEmail, mentor_id: selectedNewMentor }) });
+      const response = await fetch("https://api-penilaian.vercel.app/add_mahasiswa.php", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ nama: newStudentName, nim: newStudentNim, email: newStudentEmail, mentor_id: selectedNewMentor }) });
       const result = await response.json();
       if(result.status === "success") { setNewStudentAccountInfo({ nim: result.data.nim, password: result.data.password, email_sent: result.data.email_sent }); setNewStudentName(""); setNewStudentNim(""); setNewStudentEmail(""); setSelectedNewMentor(""); setRefreshTrigger(prev => prev + 1); } 
       else { if (result.message.toLowerCase().includes("terdaftar")) setStudentFormErrors({ nim: result.message }); else alert("Gagal menambahkan: " + result.message); }
@@ -186,7 +186,7 @@ export default function MentorDashboard() {
   const handleDeleteStudent = async (nim: string, nama: string) => {
     if (window.confirm(`⚠️ PERINGATAN: Yakin ingin MENGHAPUS mahasiswa ${nama} (${nim}) secara permanen?`)) {
       try {
-        const response = await fetch("http://localhost/api-penilaian/delete_mahasiswa.php", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ nim }) });
+        const response = await fetch("https://api-penilaian.vercel.app/delete_mahasiswa.php", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ nim }) });
         const result = await response.json(); if (result.status === "success") setRefreshTrigger(prev => prev + 1); else alert("Gagal menghapus: " + result.message);
       } catch (err) { alert("Terjadi kesalahan."); }
     }
