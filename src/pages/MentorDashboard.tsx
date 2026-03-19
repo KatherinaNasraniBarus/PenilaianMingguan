@@ -142,7 +142,7 @@ export default function MentorDashboard() {
 
   const handleViewAbsen = (nim: string, nama: string) => {
     setSelectedStudentForAbsen({ nim, nama }); setIsAbsenModalOpen(true); setLoadingAbsen(true);
-    fetch(`http://localhost/api-penilaian/get_history_absen.php?nim=${nim}`).then(res => res.json())
+    fetch(`https://api-penilaian.vercel.app/get_history_absen.php?nim=${nim}`).then(res => res.json())
       .then(result => { if (result.status === "success") setAbsenHistory(result.data); else setAbsenHistory([]); })
       .catch(err => { console.error("Error API Absen:", err); setAbsenHistory([]); }).finally(() => setLoadingAbsen(false));
   };

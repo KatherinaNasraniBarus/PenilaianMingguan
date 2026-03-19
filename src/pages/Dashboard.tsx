@@ -119,7 +119,7 @@ export default function Dashboard() {
     setIsAbsenModalOpen(true);
     setLoadingAbsen(true);
     
-    fetch(`http://localhost/api-penilaian/get_history_absen.php?nim=${userNim}`)
+    fetch(`https://api-penilaian.vercel.app/get_history_absen.php?nim=${userNim}`)
       .then(res => res.json())
       .then(result => {
         if (result.status === "success") {
