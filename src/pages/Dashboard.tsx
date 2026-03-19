@@ -203,9 +203,11 @@ export default function Dashboard() {
                                 </span>
                               </td>
 
+                              {/* PERBAIKAN TOMBOL FOTO MAHASISWA */}
                               <td className="px-5 py-4 text-center">
                                 <a 
-                                  href={`http://localhost/api-penilaian/view_photo.php?id=${absen.id}`} 
+                                  href={absen.photo_url ? absen.photo_url : "#"} 
+                                  onClick={(e) => !absen.photo_url && e.preventDefault()}
                                   target="_blank" 
                                   rel="noopener noreferrer"
                                   className="inline-flex items-center gap-1.5 text-emerald-600 hover:text-white font-bold text-xs bg-emerald-50 hover:bg-emerald-600 border border-emerald-200 px-3 py-1.5 rounded-lg transition-colors shadow-sm"
@@ -268,8 +270,8 @@ export default function Dashboard() {
           </div>
           
           <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto mt-2">
-            <a 
-              href="https://localhost:5173/" 
+          <a 
+              href={`http://localhost:5173/?nim=${userNim}`} 
               target="_blank" 
               rel="noopener noreferrer"
               className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-xl font-bold transition-all shadow-md active:scale-95 justify-center"

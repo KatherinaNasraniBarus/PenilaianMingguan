@@ -263,7 +263,20 @@ export default function MentorDashboard() {
                               <td className="px-6 py-4 font-black text-emerald-950">{index + 1}</td>
                               <td className="px-6 py-4"><span className="font-bold text-emerald-800">{parts[0] || "-"}</span></td>
                               <td className="px-6 py-4"><span className="font-mono text-emerald-700 text-sm font-bold bg-white border border-emerald-100 shadow-sm px-3 py-1.5 rounded-lg">{parts[1] || "-"}</span></td>
-                              <td className="px-6 py-4 text-center"><a href={`http://localhost/api-penilaian/view_photo.php?id=${absen.id}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-emerald-700 hover:text-white font-bold text-xs bg-emerald-50 hover:bg-emerald-600 border border-emerald-200 px-4 py-2 rounded-xl transition-colors shadow-sm"><Camera size={14} /> Lihat Foto</a></td>
+                              
+                              {/* PERBAIKAN TOMBOL FOTO MENTOR/ADMIN */}
+                              <td className="px-6 py-4 text-center">
+                                <a 
+                                  href={absen.photo_url ? absen.photo_url : "#"} 
+                                  onClick={(e) => !absen.photo_url && e.preventDefault()}
+                                  target="_blank" 
+                                  rel="noopener noreferrer" 
+                                  className="inline-flex items-center gap-2 text-emerald-700 hover:text-white font-bold text-xs bg-emerald-50 hover:bg-emerald-600 border border-emerald-200 px-4 py-2 rounded-xl transition-colors shadow-sm"
+                                >
+                                  <Camera size={14} /> Lihat Foto
+                                </a>
+                              </td>
+
                               <td className="px-6 py-4 text-right">{(absen.latitude && absen.longitude) ? (<a href={`http://maps.google.com/maps?q=${absen.latitude},${absen.longitude}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-end gap-2 text-blue-700 hover:text-white font-bold text-xs bg-blue-50 hover:bg-blue-600 border border-blue-200 px-4 py-2 rounded-xl transition-colors shadow-sm"><MapPin size={14} /> Google Maps</a>) : (<span className="text-emerald-400 text-xs italic font-medium">Lokasi tidak tersedia</span>)}</td>
                             </tr>
                           );
@@ -423,7 +436,6 @@ export default function MentorDashboard() {
               <div className="flex items-center gap-3 mb-3">
                 <h1 className="text-3xl sm:text-4xl font-black text-white capitalize tracking-tight">
                   Welcome back, {mentorName.toLowerCase()}!
-                  {/* TULISAN ADMIN BERLATAR KUNING SUDAH DIHAPUS DARI SINI */}
                 </h1>
               </div>
               <p className="text-emerald-100/90 text-sm sm:text-base font-medium leading-relaxed">
