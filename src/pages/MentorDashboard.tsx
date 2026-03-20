@@ -253,31 +253,84 @@ export default function MentorDashboard() {
                   <div className="border border-emerald-100 rounded-2xl overflow-hidden shadow-sm">
                     <table className="w-full text-left">
                       <thead className="bg-emerald-50/80 border-b border-emerald-100">
-                        <tr><th className="px-6 py-4 text-xs font-black text-emerald-800 uppercase tracking-widest">No</th><th className="px-6 py-4 text-xs font-black text-emerald-800 uppercase tracking-widest">Tanggal</th><th className="px-6 py-4 text-xs font-black text-emerald-800 uppercase tracking-widest">Waktu</th><th className="px-6 py-4 text-xs font-black text-emerald-800 uppercase tracking-widest text-center">Bukti Foto</th><th className="px-6 py-4 text-xs font-black text-emerald-800 uppercase tracking-widest text-right">Lokasi Maps</th></tr>
+                        <tr>
+                          <th className="px-6 py-4 text-xs font-black text-emerald-800 uppercase tracking-widest">No</th>
+                          <th className="px-6 py-4 text-xs font-black text-emerald-800 uppercase tracking-widest">Tanggal</th>
+                          <th className="px-6 py-4 text-xs font-black text-emerald-800 uppercase tracking-widest">Waktu</th>
+                          <th className="px-6 py-4 text-xs font-black text-emerald-800 uppercase tracking-widest text-center">Bukti Foto</th>
+                          <th className="px-6 py-4 text-xs font-black text-emerald-800 uppercase tracking-widest text-right">Lokasi Maps</th>
+                        </tr>
                       </thead>
                       <tbody className="divide-y divide-emerald-50">
                         {absenHistory.map((absen, index) => {
-                          const parts = (absen.timestamp || "").split(" ");
+                          // --- PERBAIKAN FORMAT TANGGAL DAN WAKTU DI SINI ---
+                          const rawTimestamp = absen.timestamp || "";
+                          let tanggal = "-";
+                          let waktu = "-";
+
+                          if (rawTimestamp && rawTimestamp.includes(" ")) {
+                            const parts = rawTimestamp.split(" ");
+                            const rawDate = parts[0];
+                            const rawTime = parts[1];
+
+                            // Ubah format tanggal (YYYY-MM-DD ke DD-MM-YYYY)
+                            if (rawDate.includes("-")) {
+                              const dateParts = rawDate.split("-");
+                              tanggal = `${dateParts[2]}-${dateParts[1]}-${dateParts[0]}`;
+                            }
+
+                            // Ubah format waktu (HH:mm:ss ke HH:mm WIB)
+                            if (rawTime.includes(":")) {
+                              const timeParts = rawTime.split(":");
+                              waktu = `${timeParts[0]}:${timeParts[1]} WIB`; 
+                            }
+                          }
+                          // ---------------------------------------------------
+
                           return (
                             <tr key={absen.id || index} className="hover:bg-emerald-50/50 transition-colors">
                               <td className="px-6 py-4 font-black text-emerald-950">{index + 1}</td>
-                              <td className="px-6 py-4"><span className="font-bold text-emerald-800">{parts[0] || "-"}</span></td>
-                              <td className="px-6 py-4"><span className="font-mono text-emerald-700 text-sm font-bold bg-white border border-emerald-100 shadow-sm px-3 py-1.5 rounded-lg">{parts[1] || "-"}</span></td>
                               
-                              {/* PERBAIKAN TOMBOL FOTO MENTOR/ADMIN */}
+                              <td className="px-6 py-4">
+                                <span className="font-bold text-emerald-800">{tanggal}</span>
+                              </td>
+                              
+                              <td className="px-6 py-4">
+                                <span className="font-mono text-emerald-700 text-sm font-bold bg-white border border-emerald-100 shadow-sm px-3 py-1.5 rounded-lg">
+                                  {waktu}
+                                </span>
+                              </td>
+                              
                               <td className="px-6 py-4 text-center">
-                                <a 
-                                  href={absen.photo_url ? absen.photo_url : "#"} 
-                                  onClick={(e) => !absen.photo_url && e.preventDefault()}
-                                  target="_blank" 
-                                  rel="noopener noreferrer" 
-                                  className="inline-flex items-center gap-2 text-emerald-700 hover:text-white font-bold text-xs bg-emerald-50 hover:bg-emerald-600 border border-emerald-200 px-4 py-2 rounded-xl transition-colors shadow-sm"
-                                >
-                                  <Camera size={14} /> Lihat Foto
-                                </a>
+                                {absen.photo_url ? (
+                                  <a 
+                                    href={absen.photo_url.startsWith('http') ? absen.photo_url : `https://${absen.photo_url}`} 
+                                    target="_blank" 
+                                    rel="noopener noreferrer" 
+                                    referrerPolicy="no-referrer"
+                                    className="inline-flex items-center gap-2 text-emerald-700 hover:text-white font-bold text-xs bg-emerald-50 hover:bg-emerald-600 border border-emerald-200 px-4 py-2 rounded-xl transition-colors shadow-sm"
+                                  >
+                                    <Camera size={14} /> Lihat Foto
+                                  </a>
+                                ) : (
+                                  <span className="text-emerald-300 text-xs italic">Tidak ada foto</span>
+                                )}
                               </td>
 
-                              <td className="px-6 py-4 text-right">{(absen.latitude && absen.longitude) ? (<a href={`http://maps.google.com/maps?q=${absen.latitude},${absen.longitude}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-end gap-2 text-blue-700 hover:text-white font-bold text-xs bg-blue-50 hover:bg-blue-600 border border-blue-200 px-4 py-2 rounded-xl transition-colors shadow-sm"><MapPin size={14} /> Google Maps</a>) : (<span className="text-emerald-400 text-xs italic font-medium">Lokasi tidak tersedia</span>)}</td>
+                              <td className="px-6 py-4 text-right">
+                                {(absen.latitude && absen.longitude) ? (
+                                  <a 
+                                    href={`http://googleusercontent.com/maps.google.com/maps?q=${absen.latitude},${absen.longitude}`} 
+                                    target="_blank" 
+                                    rel="noopener noreferrer" 
+                                    className="inline-flex items-center justify-end gap-2 text-blue-700 hover:text-white font-bold text-xs bg-blue-50 hover:bg-blue-600 border border-blue-200 px-4 py-2 rounded-xl transition-colors shadow-sm"
+                                  >
+                                    <MapPin size={14} /> Google Maps
+                                  </a>
+                                ) : (
+                                  <span className="text-emerald-400 text-xs italic font-medium">Lokasi tidak tersedia</span>
+                                )}
+                              </td>
                             </tr>
                           );
                         })}
