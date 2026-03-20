@@ -50,7 +50,7 @@ export default function Dashboard() {
             const mappedReports: Report[] = [];
             let reportIdCounter = 1;
 
-            // Kategori aktivitas yang sudah disesuaikan teman Anda
+            // Kategori aktivitas yang sudah disesuaikan
             const activityMap = [
               { key: "kehadiran_seminar", label: "Kehadiran Seminar" },
               { key: "akuisisi_bpu_kepling", label: "Akuisisi BPU Kepling" },
@@ -172,6 +172,7 @@ export default function Dashboard() {
                   <div className="border border-emerald-100 rounded-2xl overflow-hidden">
                     <table className="w-full text-left">
                       <thead className="bg-emerald-50/50 border-b border-emerald-100">
+                        {/* URUTAN HEADER TABEL */}
                         <tr>
                           <th className="px-5 py-3 text-xs font-bold text-emerald-700 uppercase tracking-wider">No</th>
                           <th className="px-5 py-3 text-xs font-bold text-emerald-700 uppercase tracking-wider">Tanggal</th>
@@ -181,45 +182,63 @@ export default function Dashboard() {
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-emerald-50">
-                        {absenHistory.map((absen, index) => {
-                          const rawTimestamp = absen.timestamp || "";
-                          const parts = rawTimestamp.split(" ");
-                          const tanggal = parts[0] || "-";
-                          const waktu = parts[1] || "-";
+                      {absenHistory.map((absen, index) => {
+  const rawTimestamp = absen.timestamp || "";
+  const parts = rawTimestamp.split(" ");
+  
+  let tanggal = parts[0] || "-";
+  const waktu = parts[1] || "-";
 
-                          return (
-                            <tr key={absen.id || index} className="hover:bg-emerald-50/30 transition-colors">
-                              <td className="px-5 py-4 font-bold text-emerald-900">{index + 1}</td>
-                              
-                              <td className="px-5 py-4">
-                                <span className="font-medium text-emerald-900 text-sm">
-                                  {tanggal}
-                                </span>
-                              </td>
-                              
+  // --- JURUS UBAH FORMAT TANGGAL ---
+  // Memecah "YYYY-MM-DD" menjadi array ["YYYY", "MM", "DD"]
+  if (tanggal !== "-" && tanggal.includes("-")) {
+    const tglParts = tanggal.split("-"); 
+    // Menyusun ulang menjadi "DD-MM-YYYY"
+    tanggal = `${tglParts[2]}-${tglParts[1]}-${tglParts[0]}`; 
+  }
+  // ---------------------------------
+
+  return (
+    <tr key={absen.id || index} className="hover:bg-emerald-50/30 transition-colors">
+      {/* 1. KOLOM NO */}
+      <td className="px-5 py-4 font-bold text-emerald-900">{index + 1}</td>
+      
+      {/* 2. KOLOM TANGGAL (Sekarang akan tampil tgl-bln-thn) */}
+      <td className="px-5 py-4">
+        <span className="font-medium text-emerald-900 text-sm">
+          {tanggal}
+        </span>
+      </td>
+
+                              {/* 3. KOLOM WAKTU */}
                               <td className="px-5 py-4">
                                 <span className="font-mono text-emerald-800 text-sm font-bold bg-emerald-100/50 px-2 py-1 rounded">
                                   {waktu}
                                 </span>
                               </td>
 
-                              {/* PERBAIKAN TOMBOL FOTO MAHASISWA */}
+                              {/* 4. KOLOM BUKTI FOTO (Direct Cloudinary Link dengan Anti-Forbidden) */}
                               <td className="px-5 py-4 text-center">
-                                <a 
-                                  href={absen.photo_url ? absen.photo_url : "#"} 
-                                  onClick={(e) => !absen.photo_url && e.preventDefault()}
-                                  target="_blank" 
-                                  rel="noopener noreferrer"
-                                  className="inline-flex items-center gap-1.5 text-emerald-600 hover:text-white font-bold text-xs bg-emerald-50 hover:bg-emerald-600 border border-emerald-200 px-3 py-1.5 rounded-lg transition-colors shadow-sm"
-                                >
-                                  <Camera size={14} /> Lihat Foto
-                                </a>
+                                {absen.photo_url ? (
+                                  <a 
+                                    href={absen.photo_url.startsWith('http') ? absen.photo_url : `https://${absen.photo_url}`} 
+                                    target="_blank" 
+                                    rel="noopener noreferrer"
+                                    referrerPolicy="no-referrer"
+                                    className="inline-flex items-center gap-1.5 text-emerald-600 hover:text-white font-bold text-xs bg-emerald-50 hover:bg-emerald-600 border border-emerald-200 px-3 py-1.5 rounded-lg transition-colors shadow-sm"
+                                  >
+                                    <Camera size={14} /> Lihat Foto
+                                  </a>
+                                ) : (
+                                  <span className="text-emerald-300 text-xs italic">Tidak ada foto</span>
+                                )}
                               </td>
 
+                              {/* 5. KOLOM LOKASI MAPS */}
                               <td className="px-5 py-4 text-right">
                                 {(absen.latitude && absen.longitude) ? (
                                   <a 
-                                    href={`http://maps.google.com/maps?q=${absen.latitude},${absen.longitude}`} 
+                                    href={`https://maps.google.com/?q=${absen.latitude},${absen.longitude}`} 
                                     target="_blank" 
                                     rel="noopener noreferrer"
                                     className="inline-flex items-center justify-end gap-1.5 text-blue-600 hover:text-white font-bold text-xs bg-blue-50 hover:bg-blue-600 border border-blue-200 px-3 py-1.5 rounded-lg transition-colors shadow-sm"
@@ -271,7 +290,7 @@ export default function Dashboard() {
           
           <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto mt-2">
           <a 
-              href={`http://localhost:5173/?nim=${userNim}`} 
+              href={`https://localhost:5173/?nim=${userNim}`} 
               target="_blank" 
               rel="noopener noreferrer"
               className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-xl font-bold transition-all shadow-md active:scale-95 justify-center"
