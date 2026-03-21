@@ -16,7 +16,7 @@ export default function MentorLogin() {
 
     try {
       // Menembak API PHP yang baru kita buat
-      const response = await fetch("https://api-penilaian.vercel.app/login_mentor.php", {
+      const response = await fetch("http://localhost/api-penilaian/login_mentor.php", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

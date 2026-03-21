@@ -26,7 +26,7 @@ export default function StudentLogin() {
     setErrorMessage("");
     
     try {
-      const response = await fetch("https://api-penilaian.vercel.app/login.php", {
+      const response = await fetch("http://localhost/api-penilaian/login.php", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ nim: formData.nim, password: formData.password }),
@@ -61,7 +61,7 @@ export default function StudentLogin() {
     setForgotLoading(true);
 
     try {
-      const response = await fetch("https://api-penilaian.vercel.app/reset_password.php", {
+      const response = await fetch("http://localhost/api-penilaian/reset_password.php", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ nim: forgotData.nim, email: forgotData.email }),
