@@ -1,13 +1,24 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import Layout from './components/Layout';
-import MentorLayout from './components/MentorLayout';
+import { LayoutDashboard, ClipboardList } from 'lucide-react';
+import AppLayout from './components/AppLayout';
 import Dashboard from './pages/Dashboard';
 import SubmitReport from './pages/SubmitReport';
 import RoleSelection from './pages/RoleSelection';
 import MentorLogin from './pages/MentorLogin';
 import StudentLogin from './pages/StudentLogin';
 import MentorDashboard from './pages/MentorDashboard';
+import MentorRekap from './pages/MentorRekap';
 import StudentRegister from './pages/StudentRegister';
+
+const mentorMenuItems = [
+  { name: "Dashboard", path: "/mentor/dashboard", icon: LayoutDashboard },
+  { name: "Penilaian", path: "/mentor/rekap",     icon: ClipboardList   },
+];
+
+const studentMenuItems = [
+  { name: "Dashboard",     path: "/dashboard",     icon: LayoutDashboard },
+  { name: "Submit Report", path: "/submit-report", icon: ClipboardList   },
+];
 
 export default function App() {
   return (
@@ -17,22 +28,37 @@ export default function App() {
         <Route path="/" element={<RoleSelection />} />
         <Route path="/mentor-login" element={<MentorLogin />} />
         <Route path="/student-login" element={<StudentLogin />} />
-        
-        {/* Rute baru untuk Register diletakkan di sini */}
         <Route path="/register" element={<StudentRegister />} />
 
-        {/* ─── HALAMAN MENTOR (DENGAN SIDEBAR) ─── */}
-        <Route element={<MentorLayout />}>
+        {/* ─── HALAMAN MENTOR ─── */}
+        <Route element={
+          <AppLayout
+            authStorageKey="mentor_data"
+            loginPath="/mentor-login"
+            menuItems={mentorMenuItems}
+            userStorageKey="mentor_data"
+            roleLabel="Mentor"
+          />
+        }>
           <Route path="/mentor/dashboard" element={<MentorDashboard />} />
+          <Route path="/mentor/rekap"     element={<MentorRekap />} />
         </Route>
 
-        {/* ─── HALAMAN MAHASISWA (DENGAN SIDEBAR) ─── */}
-        <Route element={<Layout />}>
-          <Route path="/dashboard" element={<Dashboard />} />
+        {/* ─── HALAMAN MAHASISWA ─── */}
+        <Route element={
+          <AppLayout
+            authStorageKey="userNim"
+            loginPath="/student-login"
+            menuItems={studentMenuItems}
+            userStorageKey="userName"
+            roleLabel="Mahasiswa"
+          />
+        }>
+          <Route path="/dashboard"     element={<Dashboard />} />
           <Route path="/submit-report" element={<SubmitReport />} />
         </Route>
 
-        {/* ─── REDIRECT JIKA URL TIDAK DITEMUKAN ─── */}
+        {/* ─── REDIRECT ─── */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
