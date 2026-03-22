@@ -174,7 +174,7 @@ export default function MentorRekap() {
     setUserRole(mentor.role ?? "mentor");
     setLoading(true);
 
-    fetch(`http://localhost/api-penilaian/get_mahasiswa_by_mentor.php?mentor_id=${mentor.id}&rekap=1`)
+    fetch(`https://api-penilaian.vercel.app/get_mahasiswa_by_mentor.php?mentor_id=${mentor.id}&rekap=1`)
       .then(r => r.json())
       .then(d => {
         if (d.status === "success") {
@@ -194,7 +194,7 @@ export default function MentorRekap() {
     const attVal  = s.attitude  === "" || s.attitude  === 0 ? null : Number(s.attitude);
     const digiVal = s.digitalisasi === "" || s.digitalisasi === 0 ? null : Number(s.digitalisasi);
     try {
-      await fetch("http://localhost/api-penilaian/simpan_nilai.php", {
+      await fetch("https://api-penilaian.vercel.app/simpan_nilai.php", {
         method:  "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -223,7 +223,7 @@ export default function MentorRekap() {
     if (modal.mode === "verifikasi") {
       setVerifyingId(s.id);
       try {
-        const r = await fetch("http://localhost/api-penilaian/verifikasi_administrasi.php", {
+        const r = await fetch("https://api-penilaian.vercel.app/verifikasi_administrasi.php", {
           method:  "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ nim: s.nim, mentor_id: mentorId }),
@@ -238,7 +238,7 @@ export default function MentorRekap() {
 
     } else {
       try {
-        const r = await fetch("http://localhost/api-penilaian/verifikasi_administrasi.php", {
+        const r = await fetch("https://api-penilaian.vercel.app/verifikasi_administrasi.php", {
           method:  "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ nim: s.nim, mentor_id: mentorId, action: "reset" }),

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { motion, AnimatePresence } from "motion/react";
+import { motion, AnimatePresence } from "framer-motion"; // Pastikan menggunakan framer-motion
 import { User, Lock, ArrowRight, ChevronLeft, AlertCircle, GraduationCap, Mail, Users, CheckCircle2, ChevronDown } from "lucide-react";
 
 export default function StudentRegister() {
@@ -19,19 +19,36 @@ export default function StudentRegister() {
   const [loading, setLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   
-  // Menyimpan error utama (di atas) dan error per kolom (di bawah input)
+  // Menyimpan error utama dan error per kolom
   const [mainError, setMainError] = useState("");
   const [fieldErrors, setFieldErrors] = useState<any>({});
 
   // Tarik data mentor saat halaman dimuat
   useEffect(() => {
-    fetch("http://localhost/api-penilaian/get_mentors.php")
+    fetch("https://api-penilaian.vercel.app/get_mentors.php")
       .then(res => res.json())
       .then(data => {
         if (data.status === "success") setMentorList(data.data);
       })
       .catch(err => console.error("Gagal memuat mentor:", err));
   }, []);
+
+  // FUNGSI PENJAGA GERBANG (VALIDASI PASSWORD KUAT)
+  const validatePassword = (password: string) => {
+    const hasUpperCase = /[A-Z]/.test(password);
+    const hasLowerCase = /[a-z]/.test(password);
+    const hasNumbers = /\d/.test(password);
+    const hasSymbols = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+    const isLongEnough = password.length >= 8;
+
+    if (!isLongEnough) return "Password minimal 8 karakter!";
+    if (!hasUpperCase) return "Harus mengandung minimal 1 Huruf Besar!";
+    if (!hasLowerCase) return "Harus mengandung minimal 1 Huruf Kecil!";
+    if (!hasNumbers) return "Harus mengandung minimal 1 Angka!";
+    if (!hasSymbols) return "Harus mengandung minimal 1 Simbol Spesial (!@#$ dll)!";
+    
+    return null; // Artinya password aman
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,13 +58,21 @@ export default function StudentRegister() {
     const newErrors: any = {};
     if (!formData.nama.trim()) newErrors.nama = "Nama Lengkap tidak boleh kosong!";
     if (!formData.nim.trim()) newErrors.nim = "NIM tidak boleh kosong!";
+    
     if (!formData.email.trim()) {
       newErrors.email = "Email tidak boleh kosong!";
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
       newErrors.email = "Format email tidak valid!";
     }
-    if (!formData.password.trim()) newErrors.password = "Password tidak boleh kosong!";
-    else if (formData.password.length < 4) newErrors.password = "Password minimal 4 karakter!";
+    
+    // PENGECEKAN PASSWORD
+    if (!formData.password.trim()) {
+      newErrors.password = "Password tidak boleh kosong!";
+    } else {
+      const passwordError = validatePassword(formData.password);
+      if (passwordError) newErrors.password = passwordError;
+    }
+
     if (!formData.mentorId) newErrors.mentorId = "Silakan pilih Mentor pembimbing!";
 
     if (Object.keys(newErrors).length > 0) {
@@ -59,7 +84,7 @@ export default function StudentRegister() {
     setLoading(true);
 
     try {
-      const response = await fetch("http://localhost/api-penilaian/register_mahasiswa.php", {
+      const response = await fetch("https://api-penilaian.vercel.app/register_mahasiswa.php", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ 
@@ -86,7 +111,7 @@ export default function StudentRegister() {
         }
       }
     } catch (error) {
-      setMainError("Terjadi kesalahan koneksi ke server. Pastikan XAMPP menyala.");
+      setMainError("Terjadi kesalahan koneksi ke server.");
     } finally {
       setLoading(false);
     }
@@ -97,7 +122,7 @@ export default function StudentRegister() {
       <motion.div
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="w-full max-w-lg" // Dibuat sedikit lebih lebar (max-w-lg) karena formnya banyak
+        className="w-full max-w-lg"
       >
         <button
           onClick={() => navigate("/student-login")}
@@ -160,7 +185,7 @@ export default function StudentRegister() {
                     {fieldErrors.nama && <p className="text-red-500 text-xs font-bold ml-2">{fieldErrors.nama}</p>}
                   </div>
 
-                  {/* BARIIS NIM & PASSWORD (Berdampingan di layar besar, bertumpuk di HP) */}
+                  {/* BARIS NIM & PASSWORD */}
                   <div className="flex flex-col sm:flex-row gap-5">
                     <div className="space-y-2 flex-1">
                       <label className="text-sm font-bold text-emerald-700 ml-1">NIM</label>
@@ -189,9 +214,13 @@ export default function StudentRegister() {
                           className={`w-full bg-emerald-50/50 border rounded-2xl py-3.5 pl-12 pr-4 outline-none focus:ring-2 transition-all font-medium ${fieldErrors.password ? 'border-red-300 focus:ring-red-500 bg-red-50/30' : 'border-emerald-100 focus:ring-emerald-500'}`}
                         />
                       </div>
-                      {fieldErrors.password && <p className="text-red-500 text-xs font-bold ml-2">{fieldErrors.password}</p>}
+                      {fieldErrors.password && <p className="text-red-500 text-xs font-bold ml-2 leading-tight">{fieldErrors.password}</p>}
                     </div>
                   </div>
+
+                  <p className="text-[10px] text-emerald-600/70 font-medium italic mt-[-8px] ml-1">
+                    *Password min 8 karakter (Besar, Kecil, Angka, & Simbol)
+                  </p>
 
                   {/* EMAIL */}
                   <div className="space-y-2">
