@@ -1,6 +1,6 @@
 import { ChevronRight, Users, Heart, Megaphone, Video, ExternalLink, Link as LinkIcon, History, X, CalendarDays, Camera, MapPin, UserCheck, ChevronDown } from "lucide-react";
 import { useEffect, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion"; // Pastikan ini menggunakan framer-motion sesuai error Vite sebelumnya
+import { motion, AnimatePresence } from "framer-motion";
 import logo from "../image/bpjstk.jpeg";
 
 interface Report {
@@ -40,7 +40,7 @@ export default function Dashboard() {
     if (nim)  setUserNim(nim);
 
     if (nim) {
-      // MENGGUNAKAN API VERCEL
+      // 1. MENGAMBIL DATA LAPORAN MINGGUAN
       fetch(`https://api-penilaian.vercel.app/get_dashboard_mahasiswa.php?nim=${nim}`)
         .then(r => r.json())
         .then(result => {
@@ -53,7 +53,6 @@ export default function Dashboard() {
               setTotalKepling(s.total_kepling       || 0);
               setTotalKeluarga(s.total_keluarga     || 0);
               setTotalSosialisasi(s.total_sosialisasi || 0);
-              setJumlahHadir(s.jumlah_hadir         || 0);
             } else {
               let kepling = 0, keluarga = 0, sosialisasi = 0;
               data.forEach((l: any) => {
@@ -64,12 +63,39 @@ export default function Dashboard() {
               setTotalKepling(kepling);
               setTotalKeluarga(keluarga);
               setTotalSosialisasi(sosialisasi);
-              setJumlahHadir(0);
             }
           }
         })
         .catch(err => console.error(err))
         .finally(() => setLoading(false));
+
+      // 2. MENGHITUNG KEHADIRAN ZOOM BERDASARKAN RIWAYAT ABSEN (meet-in & meet-out di hari yang sama)
+      fetch(`https://api-penilaian.vercel.app/get_history_absen.php?nim=${nim}`)
+        .then(r => r.json())
+        .then(result => {
+          if (result.status === "success") {
+            const history = result.data || [];
+            const dateMap: Record<string, { in: boolean; out: boolean }> = {};
+            
+            history.forEach((absen: any) => {
+              const date = absen.timestamp ? absen.timestamp.split(" ")[0] : "";
+              if (!date) return;
+              if (!dateMap[date]) dateMap[date] = { in: false, out: false };
+              
+              if (absen.type === "meet-in") dateMap[date].in = true;
+              if (absen.type === "meet-out") dateMap[date].out = true;
+            });
+
+            let meetCount = 0;
+            Object.values(dateMap).forEach(day => {
+              if (day.in && day.out) meetCount++; 
+            });
+            
+            setJumlahHadir(meetCount);
+          }
+        })
+        .catch(err => console.error("Gagal menghitung Hadir Zoom:", err));
+
     } else {
       setLoading(false);
     }
@@ -78,7 +104,6 @@ export default function Dashboard() {
   const fetchAbsenHistory = () => {
     setIsAbsenModalOpen(true);
     setLoadingAbsen(true);
-    // MENGGUNAKAN API VERCEL
     fetch(`https://api-penilaian.vercel.app/get_history_absen.php?nim=${userNim}`)
       .then(r => r.json())
       .then(result => { if (result.status === "success") setAbsenHistory(result.data); })
