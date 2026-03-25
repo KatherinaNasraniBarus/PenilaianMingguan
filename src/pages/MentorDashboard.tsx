@@ -4,7 +4,7 @@ import {
   ChevronRight, ChevronDown, Download, ExternalLink, Users,
   CheckCircle2, Clock, Trash2, UserPlus, X, Key, Copy, GraduationCap,
   Mail, CalendarClock, Save, History, MapPin, Camera, CalendarDays,
-  PlusCircle, Search, MessageCircle, FileText
+  PlusCircle, Search, MessageCircle, FileText, Pencil
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion"; 
 import logo from "../image/bpjstk.jpeg";
@@ -119,6 +119,12 @@ export default function MentorDashboard() {
   const [newStudentAccountInfo, setNewStudentAccountInfo] = useState<{ nim: string; password: string; email_sent: boolean } | null>(null);
   const [isAddingStudent, setIsAddingStudent] = useState(false);
   const [studentFormErrors, setStudentFormErrors] = useState<{ nama?: string; nim?: string; email?: string; mentor?: string }>({});
+
+  // STATE UNTUK GANTI MENTOR MAHASISWA (FITUR BARU)
+  const [isEditMentorModalOpen, setIsEditMentorModalOpen] = useState(false);
+  const [studentToEdit, setStudentToEdit] = useState<{ nim: string; nama: string; nama_mentor?: string } | null>(null);
+  const [selectedEditMentor, setSelectedEditMentor] = useState("");
+  const [isUpdatingMentor, setIsUpdatingMentor] = useState(false);
 
   const fetchWeeks = useCallback(() => {
     fetch("https://api-penilaian.vercel.app/manage_minggu.php")
@@ -238,6 +244,38 @@ export default function MentorDashboard() {
     }
   };
 
+  // FUNGSI GANTI MENTOR
+  const openEditMentorModal = (student: Student) => {
+    setStudentToEdit({ nim: student.nim, nama: student.nama, nama_mentor: student.nama_mentor });
+    setSelectedEditMentor("");
+    fetchMentors();
+    setIsEditMentorModalOpen(true);
+  };
+
+  const handleUpdateMentor = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!studentToEdit || !selectedEditMentor) return;
+    setIsUpdatingMentor(true);
+    try {
+      const response = await fetch("https://api-penilaian.vercel.app/update_mahasiswa_mentor.php", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ nim: studentToEdit.nim, mentor_id: selectedEditMentor })
+      });
+      const result = await response.json();
+      if (result.status === "success") {
+        setIsEditMentorModalOpen(false);
+        setRefreshTrigger(prev => prev + 1);
+      } else {
+        alert("Gagal memindahkan mentor: " + result.message);
+      }
+    } catch {
+      alert("Kesalahan koneksi ke server.");
+    } finally {
+      setIsUpdatingMentor(false);
+    }
+  };
+
   const searchedStudents = students.filter(s =>
     s.nama.toLowerCase().includes(searchQuery.toLowerCase()) || s.nim.includes(searchQuery)
   );
@@ -249,7 +287,6 @@ export default function MentorDashboard() {
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentStudents  = filteredStudents.slice(indexOfFirstItem, indexOfLastItem);
   const totalPages       = Math.ceil(filteredStudents.length / itemsPerPage);
-  const getPageNumbers   = () => { const pages = []; for (let i = 1; i <= totalPages; i++) pages.push(i); return pages; };
 
   const handleExportExcel = () => {
     const dataToExport = filteredStudents.map(s => ({
@@ -270,6 +307,46 @@ export default function MentorDashboard() {
 
   return (
     <div className="flex flex-col min-h-full bg-emerald-50/30">
+
+      {/* ─── MODAL GANTI MENTOR (KHUSUS ADMIN) ─── */}
+      <AnimatePresence>
+        {isEditMentorModalOpen && studentToEdit && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-emerald-950/60 backdrop-blur-sm">
+            <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} className="bg-white rounded-2xl sm:rounded-3xl w-full max-w-md flex flex-col shadow-2xl overflow-hidden">
+              <div className="px-4 sm:px-6 py-4 sm:py-5 border-b border-emerald-100 flex justify-between items-center bg-emerald-50/50 shrink-0">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-emerald-600 text-white rounded-xl shrink-0"><Pencil size={20} /></div>
+                  <h3 className="text-lg sm:text-xl font-black text-emerald-950">Ganti Mentor</h3>
+                </div>
+                <button onClick={() => setIsEditMentorModalOpen(false)} className="p-2 text-emerald-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all shrink-0"><X size={24} /></button>
+              </div>
+              <div className="p-4 sm:p-6 space-y-5 bg-slate-50/50">
+                <div className="bg-emerald-50 p-4 rounded-xl border border-emerald-100">
+                  <p className="text-xs font-bold text-emerald-600/70 uppercase tracking-widest mb-1">Mahasiswa</p>
+                  <p className="text-sm font-black text-emerald-950">{studentToEdit.nama} ({studentToEdit.nim})</p>
+                  <p className="text-xs font-medium text-emerald-700 mt-1">Mentor Saat Ini: <span className="font-bold">{studentToEdit.nama_mentor || '-'}</span></p>
+                </div>
+                
+                <form onSubmit={handleUpdateMentor} className="space-y-4">
+                  <div className="space-y-2">
+                    <label className="text-xs sm:text-sm font-bold text-emerald-900 ml-1">Pilih Mentor Baru</label>
+                    <div className="relative">
+                      <select required value={selectedEditMentor} onChange={e => setSelectedEditMentor(e.target.value)} className="w-full border rounded-xl pl-4 sm:pl-5 pr-10 py-2.5 sm:py-3.5 outline-none focus:ring-2 font-bold appearance-none border-emerald-200 bg-white text-sm">
+                        <option value="" disabled>-- Pilih Mentor --</option>
+                        {mentorList.map(m => <option key={m.id} value={m.id}>{m.nama}</option>)}
+                      </select>
+                      <ChevronDown size={16} className="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 text-emerald-500 pointer-events-none sm:w-[20px] sm:h-[20px]" />
+                    </div>
+                  </div>
+                  <button type="submit" disabled={isUpdatingMentor || !selectedEditMentor} className="w-full bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white px-6 py-3 rounded-xl font-black shadow-md text-sm mt-2 transition-all">
+                    {isUpdatingMentor ? "Menyimpan..." : "Simpan Perubahan"}
+                  </button>
+                </form>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <AnimatePresence>
         {/* MODAL ABSENSI (RESPONSIF) */}
@@ -702,11 +779,18 @@ export default function MentorDashboard() {
                         </a>
                       ) : <span className="text-slate-300 text-[10px] sm:text-xs font-bold">—</span>}
                     </td>
+                    
+                    {/* KOLOM AKSI (KHUSUS ADMIN) - GANTI MENTOR & HAPUS */}
                     {userRole === 'admin' && (
                       <td className="px-4 sm:px-6 py-4 sm:py-5 text-center">
-                        <button onClick={() => handleDeleteStudent(s.nim, s.nama)} className="p-1.5 sm:p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg sm:rounded-xl transition-colors">
-                          <Trash2 size={16} className="sm:w-[18px] sm:h-[18px]" />
-                        </button>
+                        <div className="flex items-center justify-center gap-2">
+                          <button onClick={() => openEditMentorModal(s)} title="Ganti Mentor" className="p-1.5 sm:p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg sm:rounded-xl transition-colors">
+                            <Pencil size={16} className="sm:w-[18px] sm:h-[18px]" />
+                          </button>
+                          <button onClick={() => handleDeleteStudent(s.nim, s.nama)} title="Hapus Mahasiswa" className="p-1.5 sm:p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg sm:rounded-xl transition-colors">
+                            <Trash2 size={16} className="sm:w-[18px] sm:h-[18px]" />
+                          </button>
+                        </div>
                       </td>
                     )}
                   </tr>
