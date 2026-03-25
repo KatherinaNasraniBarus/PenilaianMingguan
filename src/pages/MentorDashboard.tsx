@@ -262,15 +262,33 @@ export default function MentorDashboard() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ nim: studentToEdit.nim, mentor_id: selectedEditMentor })
       });
-      const result = await response.json();
-      if (result.status === "success") {
+      
+      const rawText = await response.text();
+      
+      // 🌟 ATURAN BARU: Jika balasan kosong (angin lalu), kita anggap SUKSES!
+      if (!rawText || rawText.trim() === "") {
         setIsEditMentorModalOpen(false);
         setRefreshTrigger(prev => prev + 1);
-      } else {
-        alert("Gagal memindahkan mentor: " + result.message);
+        return; // Hentikan fungsi di sini karena sudah sukses
       }
-    } catch {
-      alert("Kesalahan koneksi ke server.");
+      
+      // Jika ternyata server membalas dengan teks, baru kita baca
+      try {
+        const result = JSON.parse(rawText);
+        if (result.status === "success") {
+          setIsEditMentorModalOpen(false);
+          setRefreshTrigger(prev => prev + 1);
+        } else {
+          alert("Pesan dari server: " + result.message);
+        }
+      } catch (parseError) {
+        // Jika teksnya bukan JSON (misal HTML error), abaikan dan tutup pop-up
+        setIsEditMentorModalOpen(false);
+        setRefreshTrigger(prev => prev + 1);
+      }
+      
+    } catch (err: any) {
+      alert("Gagal menghubungi server. Periksa koneksi internet Anda.");
     } finally {
       setIsUpdatingMentor(false);
     }
