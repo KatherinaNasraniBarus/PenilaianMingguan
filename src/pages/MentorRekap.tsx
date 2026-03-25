@@ -174,7 +174,7 @@ export default function MentorRekap() {
     setUserRole(mentor.role ?? "mentor");
     setLoading(true);
 
-    fetch(`https://api-penilaian.vercel.app/get_mahasiswa_by_mentor.php?mentor_id=${mentor.id}&rekap=1`)
+    fetch(`http://localhost/api-penilaian/get_mahasiswa_by_mentor.php?mentor_id=${mentor.id}&rekap=1`)
       .then(r => r.json())
       .then(d => {
         if (d.status === "success") {
@@ -194,7 +194,7 @@ export default function MentorRekap() {
     const attVal  = s.attitude  === "" || s.attitude  === 0 ? null : Number(s.attitude);
     const digiVal = s.digitalisasi === "" || s.digitalisasi === 0 ? null : Number(s.digitalisasi);
     try {
-      await fetch("https://api-penilaian.vercel.app/simpan_nilai.php", {
+      await fetch("http://localhost/api-penilaian/simpan_nilai.php", {
         method:  "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -223,7 +223,7 @@ export default function MentorRekap() {
     if (modal.mode === "verifikasi") {
       setVerifyingId(s.id);
       try {
-        const r = await fetch("https://api-penilaian.vercel.app/verifikasi_administrasi.php", {
+        const r = await fetch("http://localhost/api-penilaian/verifikasi_administrasi.php", {
           method:  "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ nim: s.nim, mentor_id: mentorId }),
@@ -238,7 +238,7 @@ export default function MentorRekap() {
 
     } else {
       try {
-        const r = await fetch("https://api-penilaian.vercel.app/verifikasi_administrasi.php", {
+        const r = await fetch("http://localhost/api-penilaian/verifikasi_administrasi.php", {
           method:  "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ nim: s.nim, mentor_id: mentorId, action: "reset" }),
@@ -324,9 +324,9 @@ export default function MentorRekap() {
         </div>
       </header>
 
-      <div className="p-6 lg:p-8 max-w-5xl mx-auto w-full space-y-5 pb-24">
+      <div className="p-4 sm:p-6 lg:p-8 max-w-5xl mx-auto w-full space-y-4 sm:space-y-5 pb-24">
 
-        <h1 className="text-2xl lg:text-3xl font-black text-slate-900">Penilaian</h1>
+        <h1 className="text-xl sm:text-2xl lg:text-3xl font-black text-slate-900">Penilaian</h1>
 
         {/* Stat cards */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -375,9 +375,9 @@ export default function MentorRekap() {
           </div>
         </div>
 
-        {/* Column header */}
+        {/* Column header — hidden on mobile */}
         {!loading && filtered.length > 0 && (
-          <div className="flex items-center gap-3 px-5 select-none">
+          <div className="hidden sm:flex items-center gap-3 px-5 select-none">
             <div className="flex-1 pl-12 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Mahasiswa</div>
             <div className="w-14 text-center text-[10px] font-bold text-slate-400 uppercase tracking-wider">Aktivitas</div>
             <div className="w-12 text-center text-[10px] font-bold text-slate-400 uppercase tracking-wider">Attitude</div>
@@ -414,7 +414,7 @@ export default function MentorRekap() {
                       : "bg-white border-slate-200 hover:border-slate-300"
                     }`}>
 
-                    <div className="flex items-center gap-3 px-5 py-3.5">
+                    <div className="hidden sm:flex items-center gap-3 px-5 py-3.5">
 
                       <button
                         className="flex items-center gap-3 flex-1 min-w-0 text-left"
@@ -462,7 +462,7 @@ export default function MentorRekap() {
                             <button
                               onClick={() => handleResetVerifikasi(s)}
                               className="text-xs font-bold px-3 py-1.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition-all">
-                              Terverifikasi
+                              ✓ Terverifikasi
                             </button>
                           </>
                         ) : (
@@ -490,29 +490,130 @@ export default function MentorRekap() {
                         {isExpanded ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
                       </button>
                     </div>
+                    
+                    {/* ── Mobile row (FIXED UX) ── */}
+                    <div className="sm:hidden px-4 py-3">
+                      {/* Header */}
+                      <div className="flex items-center justify-between gap-2 mb-3">
+                        <button
+                          className="flex items-center gap-2.5 flex-1 min-w-0 text-left"
+                          onClick={() => setExpandedId(isExpanded ? null : s.id)}
+                        >
+                          <div
+                            className={`w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${
+                              isExpanded
+                                ? "bg-emerald-100 text-emerald-700"
+                                : isDinilai
+                                ? "bg-emerald-50 text-emerald-600"
+                                : "bg-slate-100 text-slate-600"
+                            }`}
+                          >
+                            {initials(s.nama)}
+                          </div>
+
+                          <div className="min-w-0">
+                            <p className="text-sm font-bold text-slate-900 truncate">
+                              {s.nama}
+                            </p>
+                            <p className="text-xs font-mono text-slate-400">
+                              {s.nim}
+                            </p>
+                          </div>
+                        </button>
+
+                        <div className="flex items-center gap-2 shrink-0">
+                          <NilaiText val={p.total} />
+                          <button
+                            onClick={() => setExpandedId(isExpanded ? null : s.id)}
+                            className={`w-7 h-7 flex items-center justify-center rounded-lg transition-all ${
+                              isExpanded
+                                ? "bg-emerald-500 text-white"
+                                : "bg-slate-100 text-slate-500"
+                            }`}
+                          >
+                            {isExpanded ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Detail */}
+                      <div className="flex flex-col gap-2 text-xs bg-slate-50 border border-slate-200 rounded-xl p-3">
+                        
+                        <div className="flex justify-between items-center">
+                          <span className="text-slate-500">Aktivitas</span>
+                          <span className={`font-mono font-bold ${aktColor}`}>
+                            {p.aktivitas}
+                          </span>
+                        </div>
+
+                        {userRole !== "admin" && (
+                          <div className="flex justify-between items-center">
+                            <span className="text-slate-500">Attitude</span>
+                            <NumberInput
+                              value={s.attitude}
+                              max={10}
+                              onChange={(v) => updateScore(s.id, "attitude", v)}
+                              onBlur={() => handleBlurSave(s)}
+                            />
+                          </div>
+                        )}
+
+                        {userRole !== "admin" && (
+                          <div className="flex justify-between items-center">
+                            <span className="text-slate-500">Digitalisasi</span>
+                            <NumberInput
+                              value={s.digitalisasi}
+                              max={20}
+                              onChange={(v) => updateScore(s.id, "digitalisasi", v)}
+                              onBlur={() => handleBlurSave(s)}
+                            />
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Verifikasi */}
+                      <div className="mt-3">
+                        {isVerified ? (
+                          <button
+                            onClick={() => handleResetVerifikasi(s)}
+                            className="w-full text-xs font-bold py-2 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-200"
+                          >
+                            ✓ Terverifikasi (Tap untuk batal)
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => handleVerifikasi(s)}
+                            disabled={isVerifying}
+                            className="w-full text-xs font-bold py-2 rounded-xl bg-amber-50 text-amber-700 border border-amber-200 disabled:opacity-50"
+                          >
+                            {isVerifying ? "Memproses..." : "Verifikasi Laporan"}
+                          </button>
+                        )}
+                      </div>
+                    </div>
 
                     {isExpanded && (
-                      <div className="border-t border-slate-100 px-5 py-4 flex items-center">
-                        <div className="flex items-center flex-1 gap-0">
+                      <div className="border-t border-slate-100 px-4 sm:px-5 py-4">
+                        <div className="grid grid-cols-2 sm:flex sm:items-center gap-3 sm:gap-0 mb-3 sm:mb-0">
                           {[
-                            { label: "Kehadiran", val: s.total_hadir },
-                            { label: "BPU Kepling",   val: s.total_kepling },
-                            { label: "BPU Keluarga",  val: s.total_keluarga },
-                            { label: "Sosialisasi",   val: s.total_sosialisasi },
+                            { label: "Kehadiran",    val: s.total_hadir },
+                            { label: "BPU Kepling",  val: s.total_kepling },
+                            { label: "BPU Keluarga", val: s.total_keluarga },
+                            { label: "Sosialisasi",  val: s.total_sosialisasi },
                           ].map((item, i) => (
-                            <div key={item.label} className="flex items-center flex-1">
+                            <div key={item.label} className="flex sm:items-center sm:flex-1">
                               <div className="flex-1">
                                 <p className="text-xs text-slate-400">{item.label}</p>
-                                <p className="text-base font-bold font-mono text-slate-800 mt-0.5">{item.val}</p>
+                                <p className="text-sm sm:text-base font-bold font-mono text-slate-800 mt-0.5">{item.val}</p>
                               </div>
-                              {i < 3 && <div className="w-px bg-slate-200 h-8 mx-4 shrink-0" />}
+                              {i < 3 && <div className="hidden sm:block w-px bg-slate-200 h-8 mx-4 shrink-0" />}
                             </div>
                           ))}
                         </div>
-                        <div className="border-l border-slate-200 pl-5 ml-5 shrink-0">
+                        <div className="sm:border-l sm:border-slate-200 sm:pl-5 sm:ml-5 mt-3 sm:mt-0">
                           {(s.link_drive || s.driveLink) ? (
                             <a href={s.link_drive || s.driveLink} target="_blank" rel="noopener noreferrer"
-                              className="flex items-center gap-2 px-3 py-2 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-xl text-xs font-bold text-emerald-700 transition-all whitespace-nowrap">
+                              className="inline-flex items-center gap-2 px-3 py-2 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-xl text-xs font-bold text-emerald-700 transition-all whitespace-nowrap">
                               <ExternalLink size={11} className="shrink-0" />
                               Lihat Google Drive
                             </a>
