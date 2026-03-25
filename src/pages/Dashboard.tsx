@@ -1,4 +1,4 @@
-import { ChevronRight, Users, Heart, Megaphone, Video, ExternalLink, Link as LinkIcon, History, X, CalendarDays, Camera, MapPin, UserCheck, ChevronDown } from "lucide-react";
+import { ChevronRight, Users, Heart, Megaphone, Video, ExternalLink, Link as LinkIcon, History, X, CalendarDays, Camera, MapPin, UserCheck, ChevronDown, FileText } from "lucide-react";
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import logo from "../image/bpjstk.jpeg";
@@ -15,7 +15,6 @@ interface Report {
   tanggal_submit: string;
 }
 
-// --- KOMPONEN PENERJEMAH KOORDINAT KE NAMA JALAN ---
 // --- KOMPONEN PENERJEMAH KOORDINAT KE NAMA JALAN (DENGAN ANTREAN PINTAR) ---
 const LocationName = ({ lat, lng }: { lat: number; lng: number }) => {
   const [address, setAddress] = useState("Melacak jalan...");
@@ -70,7 +69,6 @@ const LocationName = ({ lat, lng }: { lat: number; lng: number }) => {
     </span>
   );
 };
-// ---------------------------------------------------
 // ---------------------------------------------------
 
 export default function Dashboard() {
@@ -173,7 +171,7 @@ export default function Dashboard() {
   const currentReports = reports.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
   const statCards = [
-    { label: "BPU Kepling",  val: totalKepling,     icon: <Users size={24} />,     color: "text-emerald-600", bg: "bg-emerald-50" },
+    { label: "BPU Kepling",  val: totalKepling,      icon: <Users size={24} />,     color: "text-emerald-600", bg: "bg-emerald-50" },
     { label: "BPU Keluarga", val: totalKeluarga,    icon: <Heart size={24} />,     color: "text-blue-600",    bg: "bg-blue-50" },
     { label: "Sosialisasi",  val: totalSosialisasi, icon: <Megaphone size={24} />, color: "text-purple-600",  bg: "bg-purple-50" },
     { label: "Hadir Zoom",   val: jumlahHadir,      icon: <Video size={24} />,     color: "text-orange-600",  bg: "bg-orange-50" },
@@ -186,7 +184,7 @@ export default function Dashboard() {
       <AnimatePresence>
         {isAbsenModalOpen && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-emerald-950/60 backdrop-blur-sm">
-            <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} className="bg-white rounded-2xl sm:rounded-3xl w-full max-w-4xl max-h-[90vh] sm:max-h-[85vh] flex flex-col shadow-2xl overflow-hidden">
+            <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} className="bg-white rounded-2xl sm:rounded-3xl w-full max-w-5xl max-h-[90vh] sm:max-h-[85vh] flex flex-col shadow-2xl overflow-hidden">
               
               <div className="px-4 sm:px-6 py-4 sm:py-5 border-b border-emerald-100 flex justify-between items-center bg-emerald-50/50 shrink-0">
                 <div className="flex items-center gap-3">
@@ -212,13 +210,15 @@ export default function Dashboard() {
                 ) : (
                   <div className="border border-emerald-100 rounded-xl sm:rounded-2xl shadow-sm overflow-hidden flex flex-col">
                     <div className="overflow-x-auto w-full">
-                    <table className="w-full text-left min-w-[600px]">
+                      <table className="w-full text-left min-w-[800px]">
                         <thead className="bg-emerald-50/80 border-b border-emerald-100">
                           <tr>
                             <th className="px-4 sm:px-6 py-3 sm:py-4 text-[11px] sm:text-xs font-black text-emerald-800 uppercase tracking-widest whitespace-nowrap">No</th>
                             <th className="px-4 sm:px-6 py-3 sm:py-4 text-[11px] sm:text-xs font-black text-emerald-800 uppercase tracking-widest whitespace-nowrap">Tanggal</th>
                             <th className="px-4 sm:px-6 py-3 sm:py-4 text-[11px] sm:text-xs font-black text-emerald-800 uppercase tracking-widest whitespace-nowrap">Waktu</th>
                             <th className="px-4 sm:px-6 py-3 sm:py-4 text-[11px] sm:text-xs font-black text-emerald-800 uppercase tracking-widest text-center whitespace-nowrap">Tipe Absen</th>
+                            {/* HEADER LAPORAN */}
+                            <th className="px-4 sm:px-6 py-3 sm:py-4 text-[11px] sm:text-xs font-black text-emerald-800 uppercase tracking-widest min-w-[200px]">Laporan Jurnal</th>
                             <th className="px-4 sm:px-6 py-3 sm:py-4 text-[11px] sm:text-xs font-black text-emerald-800 uppercase tracking-widest text-center whitespace-nowrap">Bukti Foto</th>
                             <th className="px-4 sm:px-6 py-3 sm:py-4 text-[11px] sm:text-xs font-black text-emerald-800 uppercase tracking-widest text-right whitespace-nowrap">Lokasi GPS</th>
                           </tr>
@@ -249,21 +249,48 @@ export default function Dashboard() {
                               warnaTipe = "bg-rose-100 text-rose-700 border-rose-200";
                             }
 
+                            // Variabel penangkap teks laporan
+                            const textLaporan = absen.report || absen.catatan;
+
                             return (
                               <tr key={absen.id || index} className="hover:bg-emerald-50/50 transition-colors">
-                                <td className="px-4 sm:px-6 py-3 sm:py-4 font-black text-emerald-950 text-sm">{index + 1}</td>
-                                <td className="px-4 sm:px-6 py-3 sm:py-4 font-bold text-emerald-800 text-sm whitespace-nowrap">{tanggal}</td>
-                                <td className="px-4 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
+                                <td className="px-4 sm:px-6 py-3 sm:py-4 font-black text-emerald-950 text-sm align-top">{index + 1}</td>
+                                <td className="px-4 sm:px-6 py-3 sm:py-4 font-bold text-emerald-800 text-sm whitespace-nowrap align-top">{tanggal}</td>
+                                <td className="px-4 sm:px-6 py-3 sm:py-4 whitespace-nowrap align-top">
                                   <span className="font-mono text-xs sm:text-sm font-bold bg-white border border-emerald-100 shadow-sm px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg text-emerald-700">{waktu}</span>
                                 </td>
                                 
-                                <td className="px-4 sm:px-6 py-3 sm:py-4 text-center whitespace-nowrap">
+                                <td className="px-4 sm:px-6 py-3 sm:py-4 text-center whitespace-nowrap align-top">
                                   <span className={`text-[10px] sm:text-xs font-black px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg border shadow-sm ${warnaTipe}`}>
                                     {labelTipe}
                                   </span>
                                 </td>
+
+                                {/* ─── TAMPILAN KOLOM LAPORAN JURNAL (RAPI & ELEGAN) ─── */}
+                                <td className="px-4 sm:px-6 py-3 sm:py-4 align-top w-[250px] sm:w-[350px]">
+                                  {textLaporan ? (
+                                    <div className="group flex gap-3 items-start bg-white p-3 rounded-xl border border-emerald-100 shadow-[0_2px_10px_rgb(0,0,0,0.02)] hover:shadow-md hover:border-emerald-300 hover:bg-emerald-50/30 transition-all duration-300 cursor-default">
+                                      <div className="p-1.5 bg-emerald-50 group-hover:bg-emerald-500 rounded-lg shrink-0 transition-colors duration-300">
+                                        <FileText size={16} className="text-emerald-500 group-hover:text-white" />
+                                      </div>
+                                      <div className="flex-1 min-w-0">
+                                        <p className="text-xs sm:text-sm font-medium text-slate-700 leading-relaxed line-clamp-2 group-hover:line-clamp-none transition-all duration-300">
+                                          {textLaporan}
+                                        </p>
+                                        <p className="text-[10px] font-bold text-emerald-500 mt-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 h-0 group-hover:h-auto overflow-hidden">
+                                          Baca selengkapnya
+                                        </p>
+                                      </div>
+                                    </div>
+                                  ) : (
+                                    <div className="flex items-center justify-center gap-2 bg-slate-50/80 border border-dashed border-slate-200 p-2.5 rounded-xl text-slate-400">
+                                      <FileText size={14} className="opacity-50" />
+                                      <span className="text-[10px] sm:text-xs font-medium italic">Tidak ada laporan</span>
+                                    </div>
+                                  )}
+                                </td>
                                 
-                                <td className="px-4 sm:px-6 py-3 sm:py-4 text-center">
+                                <td className="px-4 sm:px-6 py-3 sm:py-4 text-center align-top">
                                   {absen.photo_url ? (
                                     <a href={absen.photo_url.startsWith('http') ? absen.photo_url : `https://${absen.photo_url}`} target="_blank" rel="noopener noreferrer" referrerPolicy="no-referrer"
                                       className="inline-flex items-center gap-1.5 sm:gap-2 text-emerald-700 hover:text-white font-bold text-[10px] sm:text-xs bg-emerald-50 hover:bg-emerald-600 border border-emerald-200 px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl transition-colors whitespace-nowrap">
@@ -272,8 +299,7 @@ export default function Dashboard() {
                                   ) : <span className="text-emerald-300 text-[10px] sm:text-xs italic whitespace-nowrap">Tidak ada foto</span>}
                                 </td>
                                 
-                                {/* KOLOM LOKASI MAPS SUDAH MENGGUNAKAN NAMA JALAN */}
-                                <td className="px-4 sm:px-6 py-3 sm:py-4 text-right">
+                                <td className="px-4 sm:px-6 py-3 sm:py-4 text-right align-top">
                                   {(absen.latitude && absen.longitude) ? (
                                     <LocationName lat={absen.latitude} lng={absen.longitude} />
                                   ) : (
@@ -317,7 +343,7 @@ export default function Dashboard() {
             <p className="text-emerald-700/60 mt-1.5 text-sm sm:text-base font-medium">Pantau aktivitas dan riwayat laporan Anda.</p>
           </div>
           <div className="flex flex-wrap gap-3">
-          <a  href={`https://localhost:5173/?nim=${userNim}`} target="_blank" rel="noopener noreferrer"
+          <a  href={`https://absensai-kamera.vercel.app/?nim=${userNim}`} target="_blank" rel="noopener noreferrer"
               className="flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-5 sm:px-6 py-2.5 sm:py-3 rounded-xl font-bold transition-all shadow-md active:scale-95 text-sm sm:text-base flex-1 sm:flex-none">
               <UserCheck size={20} /> Isi Presensi 
             </a>
