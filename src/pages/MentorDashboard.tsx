@@ -22,7 +22,7 @@ interface Student {
   driveLink: string;
 }
 
-// --- KOMPONEN PENERJEMAH KOORDINAT KE NAMA JALAN (DENGAN ANTREAN PINTAR) ---
+// --- KOMPONEN PENERJEMAH KOORDINAT KE NAMA JALAN ---
 const LocationName = ({ lat, lng }: { lat: number; lng: number }) => {
   const [address, setAddress] = useState("Melacak jalan...");
 
@@ -32,7 +32,6 @@ const LocationName = ({ lat, lng }: { lat: number; lng: number }) => {
       return;
     }
     
-    // 1. Cek apakah lokasi ini sudah pernah dilacak sebelumnya (Cache)
     const cacheKey = `loc_${lat}_${lng}`;
     const cached = sessionStorage.getItem(cacheKey);
     if (cached) {
@@ -40,11 +39,9 @@ const LocationName = ({ lat, lng }: { lat: number; lng: number }) => {
       return;
     }
 
-    // 2. Buat jeda waktu acak (antara 500ms hingga 3000ms) agar tidak membanjiri server
     const randomDelay = Math.floor(Math.random() * 2500) + 500;
     
     const timeoutId = setTimeout(() => {
-      // Menambahkan parameter email palsu agar server OpenStreetMap tidak mengira ini bot spam
       fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1&email=admin@kampus.ac.id`)
         .then(res => {
           if (!res.ok) throw new Error("Terkena limit API");
@@ -52,10 +49,9 @@ const LocationName = ({ lat, lng }: { lat: number; lng: number }) => {
         })
         .then(data => {
           if (data && data.address) {
-            // Ambil nama jalan terdekat
             const street = data.address.road || data.address.neighbourhood || data.address.suburb || data.address.village || "Lokasi terdeteksi";
             setAddress(street);
-            sessionStorage.setItem(cacheKey, street); // Simpan ke memori browser
+            sessionStorage.setItem(cacheKey, street); 
           } else {
             setAddress("Jalan tak dikenal");
           }
@@ -63,7 +59,6 @@ const LocationName = ({ lat, lng }: { lat: number; lng: number }) => {
         .catch(() => setAddress("Satelit sibuk (Gagal)"));
     }, randomDelay);
 
-    // Bersihkan antrean jika pengguna menutup modal sebelum pelacakan selesai
     return () => clearTimeout(timeoutId);
   }, [lat, lng]);
 
@@ -76,7 +71,6 @@ const LocationName = ({ lat, lng }: { lat: number; lng: number }) => {
     </span>
   );
 };
-// ---------------------------------------------------
 
 export default function MentorDashboard() {
   const navigate = useNavigate();
@@ -111,6 +105,12 @@ export default function MentorDashboard() {
   const [newAccountInfo, setNewAccountInfo] = useState<{ username: string; password: string } | null>(null);
   const [isAddingMentor, setIsAddingMentor] = useState(false);
 
+  // STATE UNTUK EDIT USERNAME MENTOR (FITUR BARU)
+  const [isEditMentorUsernameModalOpen, setIsEditMentorUsernameModalOpen] = useState(false);
+  const [mentorToEditInput, setMentorToEditInput] = useState<{ id: number; nama: string; username: string } | null>(null);
+  const [newMentorUsername, setNewMentorUsername] = useState("");
+  const [isUpdatingMentorUsername, setIsUpdatingMentorUsername] = useState(false);
+
   const [isStudentModalOpen, setIsStudentModalOpen] = useState(false);
   const [newStudentName, setNewStudentName] = useState("");
   const [newStudentNim, setNewStudentNim] = useState("");
@@ -120,7 +120,6 @@ export default function MentorDashboard() {
   const [isAddingStudent, setIsAddingStudent] = useState(false);
   const [studentFormErrors, setStudentFormErrors] = useState<{ nama?: string; nim?: string; email?: string; mentor?: string }>({});
 
-  // STATE UNTUK GANTI MENTOR MAHASISWA (FITUR BARU)
   const [isEditMentorModalOpen, setIsEditMentorModalOpen] = useState(false);
   const [studentToEdit, setStudentToEdit] = useState<{ nim: string; nama: string; nama_mentor?: string } | null>(null);
   const [selectedEditMentor, setSelectedEditMentor] = useState("");
@@ -207,6 +206,55 @@ export default function MentorDashboard() {
     } catch { alert("Kesalahan koneksi."); } finally { setIsAddingMentor(false); }
   };
 
+  // FUNGSI BUKA MODAL EDIT USERNAME MENTOR
+  const openEditMentorUsername = (m: { id: number; nama: string; username: string }) => {
+    setMentorToEditInput(m);
+    setNewMentorUsername(m.username);
+    setIsEditMentorUsernameModalOpen(true);
+  };
+
+  // FUNGSI PROSES EDIT USERNAME MENTOR
+ // FUNGSI PROSES EDIT USERNAME MENTOR
+ const handleUpdateMentorUsername = async (e: React.FormEvent) => {
+  e.preventDefault();
+  if (!mentorToEditInput || !newMentorUsername.trim()) return;
+  setIsUpdatingMentorUsername(true);
+  try {
+    const response = await fetch("https://api-penilaian.vercel.app/update_mentor.php", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id: mentorToEditInput.id, username: newMentorUsername.trim() })
+    });
+    
+    const rawText = await response.text();
+    
+    if (!rawText || rawText.trim() === "") {
+       setIsEditMentorUsernameModalOpen(false);
+       fetchMentors();
+       return;
+    }
+    
+    try {
+       const result = JSON.parse(rawText);
+       if (result.status === "success") {
+          setIsEditMentorUsernameModalOpen(false);
+          fetchMentors();
+       } else {
+          alert("Pesan dari server: " + result.message);
+       }
+    } catch {
+       alert("Server membalas dengan teks aneh: [" + rawText + "]");
+       setIsEditMentorUsernameModalOpen(false);
+       fetchMentors();
+    }
+  } catch (err: any) {
+    // 🕵️ KITA TANGKAP ERROR ASLINYA DI SINI
+    alert("Gagal menghubungi server! Penyebab asli: " + err.message);
+  } finally {
+    setIsUpdatingMentorUsername(false);
+  }
+};
+
   const handleDeleteMentor = async (id: number, nama: string) => {
     if (window.confirm(`YAKIN INGIN MENGHAPUS MENTOR "${nama}"?`)) {
       try {
@@ -244,7 +292,6 @@ export default function MentorDashboard() {
     }
   };
 
-  // FUNGSI GANTI MENTOR
   const openEditMentorModal = (student: Student) => {
     setStudentToEdit({ nim: student.nim, nama: student.nama, nama_mentor: student.nama_mentor });
     setSelectedEditMentor("");
@@ -265,14 +312,12 @@ export default function MentorDashboard() {
       
       const rawText = await response.text();
       
-      // 🌟 ATURAN BARU: Jika balasan kosong (angin lalu), kita anggap SUKSES!
       if (!rawText || rawText.trim() === "") {
         setIsEditMentorModalOpen(false);
         setRefreshTrigger(prev => prev + 1);
-        return; // Hentikan fungsi di sini karena sudah sukses
+        return; 
       }
       
-      // Jika ternyata server membalas dengan teks, baru kita baca
       try {
         const result = JSON.parse(rawText);
         if (result.status === "success") {
@@ -281,13 +326,11 @@ export default function MentorDashboard() {
         } else {
           alert("Pesan dari server: " + result.message);
         }
-      } catch (parseError) {
-        // Jika teksnya bukan JSON (misal HTML error), abaikan dan tutup pop-up
+      } catch {
         setIsEditMentorModalOpen(false);
         setRefreshTrigger(prev => prev + 1);
       }
-      
-    } catch (err: any) {
+    } catch {
       alert("Gagal menghubungi server. Periksa koneksi internet Anda.");
     } finally {
       setIsUpdatingMentor(false);
@@ -326,7 +369,38 @@ export default function MentorDashboard() {
   return (
     <div className="flex flex-col min-h-full bg-emerald-50/30">
 
-      {/* ─── MODAL GANTI MENTOR (KHUSUS ADMIN) ─── */}
+      {/* ─── MODAL EDIT USERNAME MENTOR (Z-INDEX TINGGI AGAR DI ATAS MODAL KELOLA MENTOR) ─── */}
+      <AnimatePresence>
+        {isEditMentorUsernameModalOpen && mentorToEditInput && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[60] flex items-center justify-center p-3 sm:p-4 bg-emerald-950/60 backdrop-blur-sm">
+            <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} className="bg-white rounded-2xl sm:rounded-3xl w-full max-w-sm flex flex-col shadow-2xl overflow-hidden">
+              <div className="px-4 sm:px-6 py-4 border-b border-emerald-100 flex justify-between items-center bg-emerald-50/50">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-emerald-600 text-white rounded-xl"><Pencil size={18} /></div>
+                  <h3 className="text-base sm:text-lg font-black text-emerald-950">Ubah Username</h3>
+                </div>
+                <button onClick={() => setIsEditMentorUsernameModalOpen(false)} className="p-2 text-emerald-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"><X size={20} /></button>
+              </div>
+              <div className="p-4 sm:p-6 space-y-4">
+                <div className="bg-emerald-50 p-3 rounded-xl border border-emerald-100">
+                  <p className="text-[10px] font-bold text-emerald-600/70 uppercase tracking-widest mb-1">Nama Mentor</p>
+                  <p className="text-sm font-black text-emerald-950">{mentorToEditInput.nama}</p>
+                </div>
+                <form onSubmit={handleUpdateMentorUsername} className="space-y-4">
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-emerald-900 ml-1">Username Baru</label>
+                    <input type="text" required value={newMentorUsername} onChange={e => setNewMentorUsername(e.target.value)} className="w-full border border-emerald-200 bg-white rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-emerald-500 font-mono font-bold text-sm" />
+                  </div>
+                  <button type="submit" disabled={isUpdatingMentorUsername || !newMentorUsername.trim() || newMentorUsername === mentorToEditInput.username} className="w-full bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white px-6 py-3 rounded-xl font-black shadow-md text-sm transition-all">
+                    {isUpdatingMentorUsername ? "Menyimpan..." : "Simpan Perubahan"}
+                  </button>
+                </form>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <AnimatePresence>
         {isEditMentorModalOpen && studentToEdit && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-emerald-950/60 backdrop-blur-sm">
@@ -367,7 +441,6 @@ export default function MentorDashboard() {
       </AnimatePresence>
 
       <AnimatePresence>
-        {/* MODAL ABSENSI (RESPONSIF) */}
         {isAbsenModalOpen && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-emerald-950/60 backdrop-blur-sm">
             <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} className="bg-white rounded-2xl sm:rounded-3xl w-full max-w-5xl max-h-[90vh] sm:max-h-[85vh] flex flex-col shadow-2xl overflow-hidden">
@@ -403,7 +476,6 @@ export default function MentorDashboard() {
                             <th className="px-4 sm:px-6 py-3 sm:py-4 text-[11px] sm:text-xs font-black text-emerald-800 uppercase tracking-widest whitespace-nowrap">Tanggal</th>
                             <th className="px-4 sm:px-6 py-3 sm:py-4 text-[11px] sm:text-xs font-black text-emerald-800 uppercase tracking-widest whitespace-nowrap">Waktu</th>
                             <th className="px-4 sm:px-6 py-3 sm:py-4 text-[11px] sm:text-xs font-black text-emerald-800 uppercase tracking-widest text-center whitespace-nowrap">Tipe Absen</th>
-                            {/* HEADER LAPORAN */}
                             <th className="px-4 sm:px-6 py-3 sm:py-4 text-[11px] sm:text-xs font-black text-emerald-800 uppercase tracking-widest min-w-[200px]">Laporan Jurnal</th>
                             <th className="px-4 sm:px-6 py-3 sm:py-4 text-[11px] sm:text-xs font-black text-emerald-800 uppercase tracking-widest text-center whitespace-nowrap">Bukti Foto</th>
                             <th className="px-4 sm:px-6 py-3 sm:py-4 text-[11px] sm:text-xs font-black text-emerald-800 uppercase tracking-widest text-right whitespace-nowrap">Lokasi GPS</th>
@@ -414,14 +486,12 @@ export default function MentorDashboard() {
                             const raw = absen.timestamp || "";
                             let tanggal = "-"; let waktu = "-";
                             
-                            // FORMAT TANGGAL DAN WAKTU WIB
                             if (raw.includes(" ")) {
                               const parts = raw.split(" ");
                               if (parts[0].includes("-")) { const dp = parts[0].split("-"); tanggal = `${dp[2]}-${dp[1]}-${dp[0]}`; }
                               if (parts[1]?.includes(":")) { const tp = parts[1].split(":"); waktu = `${tp[0]}:${tp[1]} WIB`; }
                             }
 
-                            // LOGIKA WARNA & TIPE ABSEN (IN/OUT)
                             const tipeRaw = absen.type || "in";
                             let labelTipe = "Masuk";
                             let warnaTipe = "bg-emerald-100 text-emerald-700 border-emerald-200";
@@ -437,7 +507,6 @@ export default function MentorDashboard() {
                               warnaTipe = "bg-rose-100 text-rose-700 border-rose-200";
                             }
 
-                            // Variabel penangkap teks laporan
                             const textLaporan = absen.report || absen.catatan;
 
                             return (
@@ -448,14 +517,12 @@ export default function MentorDashboard() {
                                   <span className="font-mono text-xs sm:text-sm font-bold bg-white border border-emerald-100 shadow-sm px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg text-emerald-700">{waktu}</span>
                                 </td>
                                 
-                                {/* KOLOM TIPE ABSEN */}
                                 <td className="px-4 sm:px-6 py-3 sm:py-4 text-center whitespace-nowrap align-top">
                                   <span className={`text-[10px] sm:text-xs font-black px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg border shadow-sm ${warnaTipe}`}>
                                     {labelTipe}
                                   </span>
                                 </td>
 
-                                {/* ─── TAMPILAN KOLOM LAPORAN JURNAL (RAPI & ELEGAN) ─── */}
                                 <td className="px-4 sm:px-6 py-3 sm:py-4 align-top w-[250px] sm:w-[350px]">
                                   {textLaporan ? (
                                     <div className="group flex gap-3 items-start bg-white p-3 rounded-xl border border-emerald-100 shadow-[0_2px_10px_rgb(0,0,0,0.02)] hover:shadow-md hover:border-emerald-300 hover:bg-emerald-50/30 transition-all duration-300 cursor-default">
@@ -488,7 +555,6 @@ export default function MentorDashboard() {
                                   ) : <span className="text-emerald-300 text-[10px] sm:text-xs italic whitespace-nowrap">Tidak ada foto</span>}
                                 </td>
                                 
-                                {/* KOLOM LOKASI MAPS MENGGUNAKAN NAMA JALAN */}
                                 <td className="px-4 sm:px-6 py-3 sm:py-4 text-right align-top">
                                   {(absen.latitude && absen.longitude) ? (
                                     <LocationName lat={absen.latitude} lng={absen.longitude} />
@@ -511,7 +577,6 @@ export default function MentorDashboard() {
       </AnimatePresence>
 
       <AnimatePresence>
-        {/* MODAL DEADLINE (RESPONSIF) */}
         {isDeadlineModalOpen && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-emerald-950/60 backdrop-blur-sm">
             <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} className="bg-white rounded-2xl sm:rounded-3xl w-full max-w-xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
@@ -549,7 +614,7 @@ export default function MentorDashboard() {
       </AnimatePresence>
 
       <AnimatePresence>
-        {/* MODAL MENTOR (RESPONSIF) */}
+        {/* MODAL KELOLA MENTOR */}
         {isMentorModalOpen && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-emerald-950/60 backdrop-blur-sm">
             <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} className="bg-white rounded-2xl sm:rounded-3xl w-full max-w-2xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
@@ -582,7 +647,7 @@ export default function MentorDashboard() {
                   <div className="overflow-x-auto w-full">
                     <table className="w-full text-left min-w-[500px]">
                       <thead className="bg-emerald-50/50 border-b border-emerald-100">
-                        <tr><th className="px-4 sm:px-6 py-3 sm:py-4 text-[10px] sm:text-xs font-black text-emerald-800 uppercase tracking-widest whitespace-nowrap">Nama</th><th className="px-4 sm:px-6 py-3 sm:py-4 text-[10px] sm:text-xs font-black text-emerald-800 uppercase tracking-widest whitespace-nowrap">Username</th><th className="px-4 sm:px-6 py-3 sm:py-4 w-10 text-center whitespace-nowrap">Aksi</th></tr>
+                        <tr><th className="px-4 sm:px-6 py-3 sm:py-4 text-[10px] sm:text-xs font-black text-emerald-800 uppercase tracking-widest whitespace-nowrap">Nama</th><th className="px-4 sm:px-6 py-3 sm:py-4 text-[10px] sm:text-xs font-black text-emerald-800 uppercase tracking-widest whitespace-nowrap">Username</th><th className="px-4 sm:px-6 py-3 sm:py-4 w-24 text-center whitespace-nowrap">Aksi</th></tr>
                       </thead>
                       <tbody className="divide-y divide-emerald-50">
                         {mentorList.length === 0 ? <tr><td colSpan={3} className="text-center py-8 text-emerald-600/50 text-sm">Belum ada data</td></tr>
@@ -590,7 +655,17 @@ export default function MentorDashboard() {
                             <tr key={m.id} className="hover:bg-emerald-50/30">
                               <td className="px-4 sm:px-6 py-3 sm:py-4 font-bold text-emerald-950 text-xs sm:text-sm whitespace-nowrap">{m.nama}</td>
                               <td className="px-4 sm:px-6 py-3 sm:py-4 font-mono text-[11px] sm:text-sm font-bold text-emerald-700 whitespace-nowrap">{m.username}</td>
-                              <td className="px-4 sm:px-6 py-3 sm:py-4 text-center"><button onClick={() => handleDeleteMentor(m.id, m.nama)} className="text-red-400 hover:text-red-600 hover:bg-red-50 p-2 rounded-lg sm:rounded-xl transition-colors"><Trash2 size={16} className="sm:w-[18px] sm:h-[18px]" /></button></td>
+                              <td className="px-4 sm:px-6 py-3 sm:py-4 text-center">
+                                {/* TOMBOL AKSI: EDIT DAN HAPUS MENTOR */}
+                                <div className="flex items-center justify-center gap-2">
+                                  <button onClick={() => openEditMentorUsername(m)} title="Ubah Username" className="text-blue-400 hover:text-blue-600 hover:bg-blue-50 p-2 rounded-lg sm:rounded-xl transition-colors">
+                                    <Pencil size={16} className="sm:w-[18px] sm:h-[18px]" />
+                                  </button>
+                                  <button onClick={() => handleDeleteMentor(m.id, m.nama)} title="Hapus Mentor" className="text-red-400 hover:text-red-600 hover:bg-red-50 p-2 rounded-lg sm:rounded-xl transition-colors">
+                                    <Trash2 size={16} className="sm:w-[18px] sm:h-[18px]" />
+                                  </button>
+                                </div>
+                              </td>
                             </tr>
                           ))}
                       </tbody>
@@ -604,7 +679,7 @@ export default function MentorDashboard() {
       </AnimatePresence>
 
       <AnimatePresence>
-        {/* MODAL MAHASISWA (RESPONSIF) */}
+        {/* MODAL MAHASISWA */}
         {isStudentModalOpen && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-emerald-950/60 backdrop-blur-sm">
             <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} className="bg-white rounded-2xl sm:rounded-3xl w-full max-w-xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
@@ -638,7 +713,6 @@ export default function MentorDashboard() {
         )}
       </AnimatePresence>
 
-      {/* ─── HEADER NAVBAR ─── */}
       <header className="h-16 sm:h-20 bg-white/90 backdrop-blur-md border-b border-emerald-100 flex items-center justify-between lg:justify-end px-4 sm:px-6 lg:px-8 sticky top-0 z-30 shrink-0 lg:pl-8 pl-14 shadow-sm">
         <div className="flex lg:hidden items-center h-full">
           <img src={logo} alt="Logo BPJS TK" className="h-10 sm:h-12 w-auto object-contain" />
@@ -652,7 +726,6 @@ export default function MentorDashboard() {
 
       <div className="p-4 sm:p-6 lg:p-8 space-y-4 sm:space-y-5 max-w-7xl mx-auto w-full pb-20">
 
-        {/* ─── HERO & ACTION BUTTONS ─── */}
         <div className="relative bg-emerald-900 rounded-[1.5rem] sm:rounded-[2.5rem] p-6 sm:p-10 overflow-hidden shadow-2xl">
           <div className="absolute top-0 right-0 -mr-20 -mt-20 w-64 sm:w-80 h-64 sm:h-80 rounded-full bg-emerald-700/50 blur-3xl"></div>
           <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6 sm:gap-8">
@@ -666,7 +739,6 @@ export default function MentorDashboard() {
             </div>
             {userRole === 'admin' && (
               <div className="flex flex-wrap gap-2 sm:gap-3 lg:justify-end">
-                {/* TOMBOL BOT WA */}
                 <a href="https://anugrahbodi.github.io/project-wa/public/" target="_blank" rel="noopener noreferrer" className="flex flex-1 sm:flex-none items-center justify-center gap-1.5 sm:gap-2 bg-emerald-500 hover:bg-emerald-400 text-emerald-950 px-3 sm:px-5 py-2.5 sm:py-3 rounded-xl sm:rounded-2xl font-black transition-all shadow-lg text-xs sm:text-sm">
                   <MessageCircle size={16} className="sm:w-[18px] sm:h-[18px]" /> Panel WA
                 </a>
@@ -684,7 +756,6 @@ export default function MentorDashboard() {
           </div>
         </div>
 
-        {/* ─── KARTU STATISTIK ─── */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-5">
           {[
             { label: "Total Mahasiswa", val: students.length,  icon: <Users size={24} className="sm:w-[28px] sm:h-[28px]" />,       color: "text-emerald-600", bg: "bg-emerald-50" },
@@ -701,7 +772,6 @@ export default function MentorDashboard() {
           ))}
         </div>
 
-        {/* ─── TOOLBAR PENCARIAN & FILTER ─── */}
         <div className="bg-white border border-slate-200 rounded-xl sm:rounded-2xl shadow-sm px-4 sm:px-5 py-3 sm:py-4">
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3 flex-wrap">
             <div className="relative shrink-0">
@@ -735,7 +805,6 @@ export default function MentorDashboard() {
           </div>
         </div>
 
-        {/* ─── TABEL UTAMA (RESPONSIF) ─── */}
         <div className="bg-white border border-emerald-100 rounded-2xl sm:rounded-[2rem] shadow-[0_4px_20px_rgb(0,0,0,0.03)] overflow-hidden flex flex-col">
           <div className="overflow-x-auto w-full">
             <table className="w-full text-left min-w-[800px]">
@@ -797,8 +866,6 @@ export default function MentorDashboard() {
                         </a>
                       ) : <span className="text-slate-300 text-[10px] sm:text-xs font-bold">—</span>}
                     </td>
-                    
-                    {/* KOLOM AKSI (KHUSUS ADMIN) - GANTI MENTOR & HAPUS */}
                     {userRole === 'admin' && (
                       <td className="px-4 sm:px-6 py-4 sm:py-5 text-center">
                         <div className="flex items-center justify-center gap-2">
@@ -817,7 +884,6 @@ export default function MentorDashboard() {
             </table>
           </div>
 
-          {/* ─── PAGINATION (RESPONSIF) ─── */}
           <div className="px-4 sm:px-6 py-4 border-t border-emerald-50 flex flex-col sm:flex-row justify-between items-center gap-3 sm:gap-4 bg-white text-xs sm:text-sm text-emerald-700/60 font-medium">
             <span>
               Menampilkan <span className="font-bold text-emerald-900">{filteredStudents.length > 0 ? indexOfFirstItem + 1 : 0}–{Math.min(indexOfLastItem, filteredStudents.length)}</span> dari <span className="font-bold text-emerald-900">{filteredStudents.length}</span> data
