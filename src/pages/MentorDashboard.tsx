@@ -6,7 +6,7 @@ import {
   Mail, CalendarClock, Save, History, MapPin, Camera, CalendarDays,
   PlusCircle, Search, MessageCircle
 } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion"; // Memperbaiki error Vite
+import { motion, AnimatePresence } from "framer-motion"; 
 import logo from "../image/bpjstk.jpeg";
 import * as XLSX from 'xlsx';
 
@@ -21,6 +21,64 @@ interface Student {
   total_sosialisasi: number;
   driveLink: string;
 }
+
+// --- KOMPONEN PENERJEMAH KOORDINAT KE NAMA JALAN ---
+// --- KOMPONEN PENERJEMAH KOORDINAT KE NAMA JALAN (DENGAN ANTREAN PINTAR) ---
+const LocationName = ({ lat, lng }: { lat: number; lng: number }) => {
+  const [address, setAddress] = useState("Melacak jalan...");
+
+  useEffect(() => {
+    if (!lat || !lng) {
+      setAddress("Tidak tersedia");
+      return;
+    }
+    
+    // 1. Cek apakah lokasi ini sudah pernah dilacak sebelumnya (Cache)
+    const cacheKey = `loc_${lat}_${lng}`;
+    const cached = sessionStorage.getItem(cacheKey);
+    if (cached) {
+      setAddress(cached);
+      return;
+    }
+
+    // 2. Buat jeda waktu acak (antara 500ms hingga 3000ms) agar tidak membanjiri server
+    const randomDelay = Math.floor(Math.random() * 2500) + 500;
+    
+    const timeoutId = setTimeout(() => {
+      // Menambahkan parameter email palsu agar server OpenStreetMap tidak mengira ini bot spam
+      fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1&email=admin@kampus.ac.id`)
+        .then(res => {
+          if (!res.ok) throw new Error("Terkena limit API");
+          return res.json();
+        })
+        .then(data => {
+          if (data && data.address) {
+            // Ambil nama jalan terdekat
+            const street = data.address.road || data.address.neighbourhood || data.address.suburb || data.address.village || "Lokasi terdeteksi";
+            setAddress(street);
+            sessionStorage.setItem(cacheKey, street); // Simpan ke memori browser
+          } else {
+            setAddress("Jalan tak dikenal");
+          }
+        })
+        .catch(() => setAddress("Satelit sibuk (Gagal)"));
+    }, randomDelay);
+
+    // Bersihkan antrean jika pengguna menutup modal sebelum pelacakan selesai
+    return () => clearTimeout(timeoutId);
+  }, [lat, lng]);
+
+  return (
+    <span className="inline-flex items-center justify-end gap-1.5 text-emerald-900 font-bold text-[10px] sm:text-xs whitespace-nowrap bg-emerald-50 px-3 py-1.5 rounded-lg border border-emerald-100">
+      <MapPin size={12} className="text-emerald-500 shrink-0" /> 
+      <span className="truncate max-w-[150px] sm:max-w-[200px] text-right" title={address}>
+        {address}
+      </span>
+    </span>
+  );
+};
+// ---------------------------------------------------
+// ---------------------------------------------------
 
 export default function MentorDashboard() {
   const navigate = useNavigate();
@@ -253,7 +311,7 @@ export default function MentorDashboard() {
                             <th className="px-4 sm:px-6 py-3 sm:py-4 text-[11px] sm:text-xs font-black text-emerald-800 uppercase tracking-widest whitespace-nowrap">Waktu</th>
                             <th className="px-4 sm:px-6 py-3 sm:py-4 text-[11px] sm:text-xs font-black text-emerald-800 uppercase tracking-widest text-center whitespace-nowrap">Tipe Absen</th>
                             <th className="px-4 sm:px-6 py-3 sm:py-4 text-[11px] sm:text-xs font-black text-emerald-800 uppercase tracking-widest text-center whitespace-nowrap">Bukti Foto</th>
-                            <th className="px-4 sm:px-6 py-3 sm:py-4 text-[11px] sm:text-xs font-black text-emerald-800 uppercase tracking-widest text-right whitespace-nowrap">Lokasi Maps</th>
+                            <th className="px-4 sm:px-6 py-3 sm:py-4 text-[11px] sm:text-xs font-black text-emerald-800 uppercase tracking-widest text-right whitespace-nowrap">Lokasi GPS</th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-emerald-50">
@@ -292,7 +350,7 @@ export default function MentorDashboard() {
                                   <span className="font-mono text-xs sm:text-sm font-bold bg-white border border-emerald-100 shadow-sm px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg text-emerald-700">{waktu}</span>
                                 </td>
                                 
-                                {/* KOLOM TIPE ABSEN BARU */}
+                                {/* KOLOM TIPE ABSEN */}
                                 <td className="px-4 sm:px-6 py-3 sm:py-4 text-center whitespace-nowrap">
                                   <span className={`text-[10px] sm:text-xs font-black px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg border shadow-sm ${warnaTipe}`}>
                                     {labelTipe}
@@ -307,13 +365,14 @@ export default function MentorDashboard() {
                                     </a>
                                   ) : <span className="text-emerald-300 text-[10px] sm:text-xs italic whitespace-nowrap">Tidak ada foto</span>}
                                 </td>
+                                
+                                {/* KOLOM LOKASI MAPS MENGGUNAKAN NAMA JALAN */}
                                 <td className="px-4 sm:px-6 py-3 sm:py-4 text-right">
                                   {(absen.latitude && absen.longitude) ? (
-                                    <a href={`https://www.google.com/maps?q=${absen.latitude},${absen.longitude}`} target="_blank" rel="noopener noreferrer"
-                                      className="inline-flex items-center justify-end gap-1.5 sm:gap-2 text-blue-700 hover:text-white font-bold text-[10px] sm:text-xs bg-blue-50 hover:bg-blue-600 border border-blue-200 px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl transition-colors whitespace-nowrap">
-                                      <MapPin size={14} /> Google Maps
-                                    </a>
-                                  ) : <span className="text-emerald-400 text-[10px] sm:text-xs italic whitespace-nowrap">Tidak tersedia</span>}
+                                    <LocationName lat={absen.latitude} lng={absen.longitude} />
+                                  ) : (
+                                    <span className="text-emerald-400 text-[10px] sm:text-xs italic whitespace-nowrap">Tidak tersedia</span>
+                                  )}
                                 </td>
                               </tr>
                             );
