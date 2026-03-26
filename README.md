@@ -89,7 +89,7 @@ Role ini merupakan portal khusus bagi para mahasiswa magang untuk melakukan abse
   ![image alt](https://github.com/KatherinaNasraniBarus/PenilaianMingguan/blob/33a8436bc2515985b0a761345c37259ffa8f4b70/src/image/Screen%20Registrasi%20Wajah%205.png)
   
 * Sampai berubah "Terdaftar", lalu bisa lanjut presensi
-  ![image alt](https://github.com/KatherinaNasraniBarus/PenilaianMingguan/blob/cfcbd36f8c10472ee8e7b2bf085eca63d6182700/src/image/Screen%20Mulai%20Presensi%20(After%20Registration).png)
+  ## ![image alt](https://github.com/KatherinaNasraniBarus/PenilaianMingguan/blob/cfcbd36f8c10472ee8e7b2bf085eca63d6182700/src/image/Screen%20Mulai%20Presensi%20(After%20Registration).png)
 
 **4. Presensi Kehadiran (Absensi Harian)**
   Mahasiswa wajib melakukan proses absensi saat memulai dan mengakhiri pekerjaan.
