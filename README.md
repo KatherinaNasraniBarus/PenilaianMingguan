@@ -1,20 +1,31 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+## 📖 Panduan SATU BPJS TK
 
-# Run and deploy your AI Studio app
+### 👨‍💼 Akses Mentor
 
-This contains everything you need to run your app locally.
+Bagian ini digunakan oleh koordinator/mentor dari BPJS Ketenagakerjaan untuk memantau perkembangan dan aktivitas mahasiswa magang.
 
-View your app in AI Studio: https://ai.studio/apps/d38a24bf-1cae-4acd-a7b4-e6f1443b29fb
+**1. Halaman Utama (Portal)**
+* Buka halaman utama aplikasi.
+* Pilih opsi **Mentor** dengan mengklik tombol **"Pilih Mentor"** untuk masuk ke portal khusus koordinator.
 
-## Run Locally
+**2. Halaman Login**
+* Masukkan kredensial (username/email dan password) akun Mentor yang telah didaftarkan untuk masuk ke dalam sistem.
 
-**Prerequisites:**  Node.js
+**3. Dashboard Mentor**
+Halaman utama setelah login yang menampilkan ringkasan aktivitas mahasiswa bimbingan. Pada halaman ini, Mentor dapat:
+* **Melihat Statistik Laporan:** Memantau jumlah **Total Mahasiswa** bimbingan, serta jumlah mahasiswa yang **Sudah Lapor** dan **Belum Lapor** pada minggu tertentu.
+* **Mencari Mahasiswa:** Menggunakan kolom pencarian untuk mencari mahasiswa berdasarkan Nama atau NIM.
+* **Filter Data:** Menyaring data berdasarkan minggu ke-berapa dan status laporan.
 
+**4. Cek Riwayat Kehadiran**
+* Pada tabel daftar mahasiswa di Dashboard, klik tombol **"Cek"** pada kolom **Kehadiran**.
+* Sistem akan memunculkan *pop-up* **Riwayat Kehadiran** yang berisi detail absensi mahasiswa, meliputi: Tanggal, Waktu, Tipe Absen (Masuk/Pulang), Laporan Jurnal harian, Bukti Foto, dan Lokasi absensi.
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+**5. Halaman Penilaian**
+* Akses menu **Penilaian** melalui *sidebar* di sebelah kiri.
+* Halaman ini digunakan untuk memantau status evaluasi mahasiswa, dengan metrik yang menampilkan: Total mahasiswa, jumlah yang Sudah dinilai, Belum dinilai, dan Laporan terverifikasi.
+
+### 👨‍🎓 Akses Mahasiswa
+**6. Export Excel**
+* Mentor dapat mengunduh rekap data mahasiswa ke dalam format `.xlsx` dengan mengklik tombol **"Export Excel"**.
+* Fitur ini tersedia di halaman **Dashboard** (untuk rekap status laporan & kehadiran) maupun di halaman **Penilaian**.
