@@ -4,7 +4,7 @@ import {
   ChevronRight, ChevronDown, Download, ExternalLink, Users,
   CheckCircle2, Clock, Trash2, UserPlus, X, Key, Copy, GraduationCap,
   Mail, CalendarClock, Save, History, MapPin, Camera, CalendarDays,
-  PlusCircle, Search, MessageCircle, FileText, Pencil
+  PlusCircle, Search, MessageCircle, FileText, Pencil, RefreshCcw
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion"; 
 import logo from "../image/bpjstk.jpeg";
@@ -348,6 +348,36 @@ export default function MentorDashboard() {
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentStudents  = filteredStudents.slice(indexOfFirstItem, indexOfLastItem);
   const totalPages       = Math.ceil(filteredStudents.length / itemsPerPage);
+  
+// FUNGSI RESET WAJAH MAHASISWA (VERSI DETEKTIF)
+const handleResetWajah = async (nim: string, nama: string) => {
+  if (window.confirm(`🔄 Yakin ingin mereset data wajah ${nama} (${nim})? Mahasiswa ini harus scan wajah ulang saat absen berikutnya.`)) {
+    try {
+      const response = await fetch("https://api-penilaian.vercel.app/reset_wajah.php", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ nim })
+      });
+      
+      const rawText = await response.text();
+      
+      try {
+        const result = JSON.parse(rawText);
+        if (result.status === "success") {
+          alert(`✅ BERHASIL! Data wajah ${nama} telah dikosongkan di database.`);
+        } else {
+          alert("❌ GAGAL DARI DATABASE: " + result.message);
+        }
+      } catch {
+        // Nah, ini dia penangkap aslinya!
+        alert(`🚨 KETAHUAN ERROR SERVER! Balasan aslinya: [${rawText.substring(0, 100)}...]`);
+        console.error("Error dari server:", rawText);
+      }
+    } catch (err: any) {
+      alert("🌐 Gagal menghubungi server: " + err.message);
+    }
+  }
+};
 
   const handleExportExcel = () => {
     const dataToExport = filteredStudents.map(s => ({
@@ -871,6 +901,10 @@ export default function MentorDashboard() {
                         <div className="flex items-center justify-center gap-2">
                           <button onClick={() => openEditMentorModal(s)} title="Ganti Mentor" className="p-1.5 sm:p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg sm:rounded-xl transition-colors">
                             <Pencil size={16} className="sm:w-[18px] sm:h-[18px]" />
+                          </button>
+                          {/* TOMBOL BARU: RESET WAJAH */}
+                          <button onClick={() => handleResetWajah(s.nim, s.nama)} title="Reset Wajah (Regis Ulang)" className="p-1.5 sm:p-2 text-slate-400 hover:text-orange-500 hover:bg-orange-50 rounded-lg sm:rounded-xl transition-colors">
+                            <RefreshCcw size={16} className="sm:w-[18px] sm:h-[18px]" />
                           </button>
                           <button onClick={() => handleDeleteStudent(s.nim, s.nama)} title="Hapus Mahasiswa" className="p-1.5 sm:p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg sm:rounded-xl transition-colors">
                             <Trash2 size={16} className="sm:w-[18px] sm:h-[18px]" />
