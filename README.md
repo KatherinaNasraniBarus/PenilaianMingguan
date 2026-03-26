@@ -120,16 +120,12 @@ Setelah login, mahasiswa akan diarahkan ke halaman **Dashboard**. Ini adalah pus
   ![image alt](https://github.com/KatherinaNasraniBarus/PenilaianMingguan/blob/cfcbd36f8c10472ee8e7b2bf085eca63d6182700/src/image/Screen%20Presensi%20Wajah%20(Absen%20Lokasi)%203%20-%20Checkout.png)
   
 **5. Presensi Meet (Absensi Meeting)**
-* **Check-in (Absen Masuk):** Lakukan proses yang sama (wajah, lokasi, dan foto) saat meulai mengikuti meet.
+* **Check-in (Absen Masuk):** Absensi Meet (sedang rapat online), wajib menampakkan wajah (selfie) dan layar laptop atau HP yang sedang menjalankan meeting tersebut.
   
-  ![image alt](https://github.com/KatherinaNasraniBarus/PenilaianMingguan/blob/cfcbd36f8c10472ee8e7b2bf085eca63d6182700/src/image/Screen%20Presensi%20Wajah%20(Absen%20Meeting)%201.png)
-  ![image alt](https://github.com/KatherinaNasraniBarus/PenilaianMingguan/blob/cfcbd36f8c10472ee8e7b2bf085eca63d6182700/src/image/Screen%20Presensi%20Wajah%20(Absen%20Meeting)%202.png)
-  ![image alt](https://github.com/KatherinaNasraniBarus/PenilaianMingguan/blob/cfcbd36f8c10472ee8e7b2bf085eca63d6182700/src/image/Screen%20Presensi%20Wajah%20(Absen%20Meeting)%203.png)
+  ![image alt](https://github.com/KatherinaNasraniBarus/PenilaianMingguan/blob/66a04d27d92afd28a5deb984d31a95bcb592f391/src/image/Screen%20Absen%20Meet.jpeg)
   
-* **Check-out (Absen Keluar):** Lakukan proses yang sama (wajah, lokasi, dan foto) saat selesai mengikuti meet dan tuliskan juga laporan yang kamu dapat peroleh meet.
+* **Check-out (Absen Keluar):** Saama seperti check-in (wajah, lokasi, dan foto) dan tuliskan juga laporan yang kamu dapat peroleh dari meet.
   
-  ![image alt](https://github.com/KatherinaNasraniBarus/PenilaianMingguan/blob/cfcbd36f8c10472ee8e7b2bf085eca63d6182700/src/image/Screen%20Presensi%20Wajah%20(Absen%20Meeting)%201%20-%20Checkout.png)
-  ![image alt](https://github.com/KatherinaNasraniBarus/PenilaianMingguan/blob/cfcbd36f8c10472ee8e7b2bf085eca63d6182700/src/image/Screen%20Presensi%20Wajah%20(Absen%20Meeting)%202%20-%20Checkout.png)
   ![image alt](https://github.com/KatherinaNasraniBarus/PenilaianMingguan/blob/cfcbd36f8c10472ee8e7b2bf085eca63d6182700/src/image/Screen%20Presensi%20Wajah%20(Absen%20Meeting)%203%20-%20Checkout.png)
   
 * **Riwayat Absensi:** Mahasiswa dapat melihat rekapitulasi data kehadiran harian mereka secara lengkap pada menu riwayat.
@@ -149,6 +145,8 @@ Setelah login, mahasiswa akan diarahkan ke halaman **Dashboard**. Ini adalah pus
 
 **6b. Submit Report (Pembuatan Folder Google Drive)**
 
+Aturan mengisi Google Drive:
+  
 * Buka Google Drive anda masing-masing, lalu buat folder baru bernama "BPJS TK"
   
   ![image alt](https://github.com/KatherinaNasraniBarus/PenilaianMingguan/blob/cfcbd36f8c10472ee8e7b2bf085eca63d6182700/src/image/Screen%20Buat%20Folder%20Baru%20GDrive%20-%20BPJS%20TK%201.png)
@@ -157,6 +155,10 @@ Setelah login, mahasiswa akan diarahkan ke halaman **Dashboard**. Ini adalah pus
   *(seterusnya isi dan tambahkan sesuai laporan mingguan kamu masing-masing, misal : MINGGU KEDUA; MINGGU KETIGA; MINGGU KEEMPAT; dst..)*
   
   ![image alt](https://github.com/KatherinaNasraniBarus/PenilaianMingguan/blob/cfcbd36f8c10472ee8e7b2bf085eca63d6182700/src/image/Screen%20Buat%20Folder%20Baru%20GDrive%20-%20BPJS%20TK%202.png)
+
+* Folder wajib berisi file *"total akuisisi.xlsx"* yang telah diisi, sertakan bukti dokumentasi *(seperti foto kegiatan atau dokumen pendukung tepercaya lainnya)*. Bukti ini akan memvalidasi kebenaran data yang diklaim di dalam file laporan excel tersebut. Link template : s.id/templatetotalakuisisi
+  
+  ![image alt](https://github.com/KatherinaNasraniBarus/PenilaianMingguan/blob/66a04d27d92afd28a5deb984d31a95bcb592f391/src/image/Screen%20Buat%20Folder%20Baru%20GDrive%20-%20BPJS%20TK%205.png)
 
 * Atur visibilitas atau bagikan folder secara publik, lalu **Salin** link foldernya.
   
