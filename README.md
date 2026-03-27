@@ -4,7 +4,7 @@
   
 ![image alt](https://github.com/KatherinaNasraniBarus/PenilaianMingguan/blob/77eb19b80650192463c15ac371e917f7c836b156/src/image/Screen%20Portal.png)
   
-[Panduan dalam bentuk pdf :](drive.google.com/drive/folders/183hwlHBjKQxABC0bu73mHL3ei1deY0sv?)
+[Panduan dalam bentuk pdf : drive.google.com/drive/folders/183hwlHBjKQxABC0bu73mHL3ei1deY0sv?]
   
 ### 👨‍💼 Mentor
 
