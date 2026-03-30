@@ -9,7 +9,7 @@ import StudentLogin from './pages/StudentLogin';
 import MentorDashboard from './pages/MentorDashboard';
 import MentorRekap from './pages/MentorRekap';
 import StudentRegister from './pages/StudentRegister';
-
+import RiwayatAbsen from './pages/RiwayatAbsen';
 const mentorMenuItems = [
   { name: "Dashboard", path: "/mentor/dashboard", icon: LayoutDashboard },
   { name: "Penilaian", path: "/mentor/rekap",     icon: ClipboardList   },
@@ -29,7 +29,7 @@ export default function App() {
         <Route path="/mentor-login" element={<MentorLogin />} />
         <Route path="/student-login" element={<StudentLogin />} />
         <Route path="/register" element={<StudentRegister />} />
-
+        <Route path="/riwayat-absen" element={<RiwayatAbsen />} />
         {/* ─── HALAMAN MENTOR ─── */}
         <Route element={
           <AppLayout

@@ -29,7 +29,7 @@ const FILTER_LABELS: Record<FilterStatus, string> = {
 
 function hitungPoin(s: Student) {
   const seminar      = Math.min((s.total_hadir      ?? 0) * 2,   10);
-  const kepling      = Math.min((s.total_kepling    ?? 0) * 0.2, 16);
+  const kepling      = Math.min(Math.floor((s.total_kepling    ?? 0) * 0.23), 16);
   const keluarga     = Math.min((s.total_keluarga   ?? 0) * 0.4,  4);
   const sosialisasi  = (s.total_sosialisasi ?? 0) > 0 ? 30 : 0;
   const administrasi = s.poin_administrasi ?? 0;
