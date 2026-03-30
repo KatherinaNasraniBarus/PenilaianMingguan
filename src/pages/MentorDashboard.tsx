@@ -4,7 +4,7 @@ import {
   ChevronRight, ChevronDown, Download, ExternalLink, Users,
   CheckCircle2, Clock, Trash2, UserPlus, X, Key, Copy, GraduationCap,
   Mail, CalendarClock, Save, History, MapPin, Camera, CalendarDays,
-  PlusCircle, Search, MessageCircle, FileText, Pencil, RefreshCcw
+  PlusCircle, Search, MessageCircle, FileText, Pencil, RefreshCcw, Monitor
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion"; 
 import logo from "../image/bpjstk.jpeg";
@@ -125,6 +125,43 @@ export default function MentorDashboard() {
   const [selectedEditMentor, setSelectedEditMentor] = useState("");
   const [isUpdatingMentor, setIsUpdatingMentor] = useState(false);
 
+  // --- FITUR ZOOM TOGGLE ---
+  const [isZoomEnabled, setIsZoomEnabled] = useState(true);
+  const [isTogglingZoom, setIsTogglingZoom] = useState(false);
+
+  const fetchZoomStatus = useCallback(() => {
+    fetch("https://api-penilaian.vercel.app/get_zoom_status.php")
+      .then(res => res.json())
+      .then(data => {
+        if (data.status === "success") setIsZoomEnabled(data.is_enabled);
+      })
+      .catch(err => console.error("Gagal mengambil status zoom:", err));
+  }, []);
+
+  const handleToggleZoom = async () => {
+    if (!window.confirm(`Yakin ingin ${isZoomEnabled ? 'MENONAKTIFKAN' : 'MENGAKTIFKAN'} akses absensi Zoom?`)) return;
+    setIsTogglingZoom(true);
+    const newState = !isZoomEnabled;
+    
+    try {
+      const response = await fetch("https://api-penilaian.vercel.app/update_zoom_status.php", {
+        method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ is_enabled: newState })
+      });
+      const result = await response.json();
+      
+      if (result.status === "success") {
+        setIsZoomEnabled(newState);
+      } else {
+        alert("Gagal mengubah status: " + result.message);
+      }
+    } catch (err: any) { 
+      console.error("Error toggle zoom:", err);
+      alert("Kesalahan koneksi saat mengubah status Zoom."); 
+    } finally { 
+      setIsTogglingZoom(false); 
+    }
+  };
+  
   const fetchWeeks = useCallback(() => {
     fetch("https://api-penilaian.vercel.app/manage_minggu.php")
       .then(res => res.json())
@@ -160,7 +197,8 @@ export default function MentorDashboard() {
 
     fetchWeeks();
     fetchDeadlines();
-  }, [navigate, selectedWeek, refreshTrigger, fetchWeeks, fetchDeadlines]);
+    fetchZoomStatus();
+  }, [navigate, selectedWeek, refreshTrigger, fetchWeeks, fetchDeadlines, fetchZoomStatus]);
 
   const handleAddWeek = async () => {
     if (!newWeekInput.trim()) return;
@@ -206,15 +244,12 @@ export default function MentorDashboard() {
     } catch { alert("Kesalahan koneksi."); } finally { setIsAddingMentor(false); }
   };
 
-  // FUNGSI BUKA MODAL EDIT USERNAME MENTOR
   const openEditMentorUsername = (m: { id: number; nama: string; username: string }) => {
     setMentorToEditInput(m);
     setNewMentorUsername(m.username);
     setIsEditMentorUsernameModalOpen(true);
   };
 
-  // FUNGSI PROSES EDIT USERNAME MENTOR
- // FUNGSI PROSES EDIT USERNAME MENTOR
  const handleUpdateMentorUsername = async (e: React.FormEvent) => {
   e.preventDefault();
   if (!mentorToEditInput || !newMentorUsername.trim()) return;
@@ -237,10 +272,10 @@ export default function MentorDashboard() {
     try {
        const result = JSON.parse(rawText);
        if (result.status === "success") {
-          setIsEditMentorUsernameModalOpen(false);
-          fetchMentors();
+         setIsEditMentorUsernameModalOpen(false);
+         fetchMentors();
        } else {
-          alert("Pesan dari server: " + result.message);
+         alert("Pesan dari server: " + result.message);
        }
     } catch {
        alert("Server membalas dengan teks aneh: [" + rawText + "]");
@@ -248,7 +283,6 @@ export default function MentorDashboard() {
        fetchMentors();
     }
   } catch (err: any) {
-    // 🕵️ KITA TANGKAP ERROR ASLINYA DI SINI
     alert("Gagal menghubungi server! Penyebab asli: " + err.message);
   } finally {
     setIsUpdatingMentorUsername(false);
@@ -349,7 +383,6 @@ export default function MentorDashboard() {
   const currentStudents  = filteredStudents.slice(indexOfFirstItem, indexOfLastItem);
   const totalPages       = Math.ceil(filteredStudents.length / itemsPerPage);
   
-// FUNGSI RESET WAJAH MAHASISWA (VERSI DETEKTIF)
 const handleResetWajah = async (nim: string, nama: string) => {
   if (window.confirm(`🔄 Yakin ingin mereset data wajah ${nama} (${nim})? Mahasiswa ini harus scan wajah ulang saat absen berikutnya.`)) {
     try {
@@ -369,7 +402,6 @@ const handleResetWajah = async (nim: string, nama: string) => {
           alert("❌ GAGAL DARI DATABASE: " + result.message);
         }
       } catch {
-        // Nah, ini dia penangkap aslinya!
         alert(`🚨 KETAHUAN ERROR SERVER! Balasan aslinya: [${rawText.substring(0, 100)}...]`);
         console.error("Error dari server:", rawText);
       }
@@ -399,7 +431,7 @@ const handleResetWajah = async (nim: string, nama: string) => {
   return (
     <div className="flex flex-col min-h-full bg-emerald-50/30">
 
-      {/* ─── MODAL EDIT USERNAME MENTOR (Z-INDEX TINGGI AGAR DI ATAS MODAL KELOLA MENTOR) ─── */}
+      {/* ─── MODAL EDIT USERNAME MENTOR ─── */}
       <AnimatePresence>
         {isEditMentorUsernameModalOpen && mentorToEditInput && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[60] flex items-center justify-center p-3 sm:p-4 bg-emerald-950/60 backdrop-blur-sm">
@@ -772,6 +804,10 @@ const handleResetWajah = async (nim: string, nama: string) => {
                 <a href="https://anugrahbodi.github.io/project-wa/public/" target="_blank" rel="noopener noreferrer" className="flex flex-1 sm:flex-none items-center justify-center gap-1.5 sm:gap-2 bg-emerald-500 hover:bg-emerald-400 text-emerald-950 px-3 sm:px-5 py-2.5 sm:py-3 rounded-xl sm:rounded-2xl font-black transition-all shadow-lg text-xs sm:text-sm">
                   <MessageCircle size={16} className="sm:w-[18px] sm:h-[18px]" /> Panel WA
                 </a>
+                <button onClick={handleToggleZoom} disabled={isTogglingZoom} className={`flex flex-1 sm:flex-none items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-2.5 sm:py-3 rounded-xl sm:rounded-2xl font-bold transition-all text-xs sm:text-sm shadow-lg ${isZoomEnabled ? 'bg-blue-500 hover:bg-blue-400 text-white' : 'bg-red-500 hover:bg-red-400 text-white'}`}>
+                  <Monitor size={16} className="sm:w-[18px] sm:h-[18px]" /> 
+                  {isTogglingZoom ? 'Memproses...' : (isZoomEnabled ? 'Zoom: ON' : 'Zoom: OFF')}
+                </button>
                 <button onClick={() => setIsDeadlineModalOpen(true)} className="flex flex-1 sm:flex-none items-center justify-center gap-1.5 sm:gap-2 bg-white/10 hover:bg-white/20 text-white border border-white/20 px-3 sm:px-5 py-2.5 sm:py-3 rounded-xl sm:rounded-2xl font-bold transition-all text-xs sm:text-sm">
                   <CalendarClock size={16} className="sm:w-[18px] sm:h-[18px]" /> Jadwal
                 </button>
@@ -788,7 +824,7 @@ const handleResetWajah = async (nim: string, nama: string) => {
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-5">
           {[
-            { label: "Total Mahasiswa", val: students.length,  icon: <Users size={24} className="sm:w-[28px] sm:h-[28px]" />,       color: "text-emerald-600", bg: "bg-emerald-50" },
+            { label: "Total Mahasiswa", val: students.length,  icon: <Users size={24} className="sm:w-[28px] sm:h-[28px]" />,        color: "text-emerald-600", bg: "bg-emerald-50" },
             { label: "Sudah Lapor",     val: sudahCount,        icon: <CheckCircle2 size={24} className="sm:w-[28px] sm:h-[28px]" />, color: "text-emerald-500", bg: "bg-emerald-50" },
             { label: "Belum Lapor",     val: belumCount,        icon: <Clock size={24} className="sm:w-[28px] sm:h-[28px]" />,        color: "text-red-500",     bg: "bg-red-50" },
           ].map(card => (
@@ -902,7 +938,6 @@ const handleResetWajah = async (nim: string, nama: string) => {
                           <button onClick={() => openEditMentorModal(s)} title="Ganti Mentor" className="p-1.5 sm:p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg sm:rounded-xl transition-colors">
                             <Pencil size={16} className="sm:w-[18px] sm:h-[18px]" />
                           </button>
-                          {/* TOMBOL BARU: RESET WAJAH */}
                           <button onClick={() => handleResetWajah(s.nim, s.nama)} title="Reset Wajah (Regis Ulang)" className="p-1.5 sm:p-2 text-slate-400 hover:text-orange-500 hover:bg-orange-50 rounded-lg sm:rounded-xl transition-colors">
                             <RefreshCcw size={16} className="sm:w-[18px] sm:h-[18px]" />
                           </button>
@@ -941,5 +976,3 @@ const handleResetWajah = async (nim: string, nama: string) => {
     </div>
   );
 }
-
-//g
