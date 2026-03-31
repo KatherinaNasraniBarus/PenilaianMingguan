@@ -130,7 +130,7 @@ export default function MentorDashboard() {
   const [isTogglingZoom, setIsTogglingZoom] = useState(false);
 
   const fetchZoomStatus = useCallback(() => {
-  fetch('/api/get_zoom_status') 
+  fetch('https://absensai.vercel.app/api/get_zoom_status') 
     .then(res => res.json())
     .then(data => {
       if (data.status === "success") setIsZoomEnabled(data.is_enabled);
@@ -145,7 +145,7 @@ export default function MentorDashboard() {
     
     try {
       // 🚀 MENGGUNAKAN LINK LIVE BACKEND
-      const response = await fetch('/api/update_zoom_status', {
+      const response = await fetch('https://absensai.vercel.app/api/update_zoom_status', {
         method: "POST", 
         headers: { "Content-Type": "application/json" }, 
         body: JSON.stringify({ is_enabled: newState })
