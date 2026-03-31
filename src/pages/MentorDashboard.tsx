@@ -130,8 +130,8 @@ export default function MentorDashboard() {
   const [isTogglingZoom, setIsTogglingZoom] = useState(false);
 
   const fetchZoomStatus = useCallback(() => {
-    fetch("https://api-penilaian.vercel.app/get_zoom_status.php")
-      .then(res => res.json())
+    fetch('http://localhost:5000/api/get_zoom_status')
+    .then(res => res.json())
       .then(data => {
         if (data.status === "success") setIsZoomEnabled(data.is_enabled);
       })
@@ -144,9 +144,11 @@ export default function MentorDashboard() {
     const newState = !isZoomEnabled;
     
     try {
-      const response = await fetch("https://api-penilaian.vercel.app/update_zoom_status.php", {
-        method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ is_enabled: newState })
-      });
+      const response = await fetch('http://localhost:5000/api/update_zoom_status', {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ is_enabled: newState })
+    });
       const result = await response.json();
       
       if (result.status === "success") {
