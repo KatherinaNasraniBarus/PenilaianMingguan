@@ -130,7 +130,8 @@ export default function MentorDashboard() {
   const [isTogglingZoom, setIsTogglingZoom] = useState(false);
 
   const fetchZoomStatus = useCallback(() => {
-  fetch('https://absensai.vercel.app/api/get_zoom_status') 
+  // KODE BARU
+  fetch(`https://absensai.vercel.app/api/get_zoom_status?t=${new Date().getTime()}`, { cache: 'no-store' })
     .then(res => res.json())
     .then(data => {
       if (data.status === "success") setIsZoomEnabled(data.is_enabled);
