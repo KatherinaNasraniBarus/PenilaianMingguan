@@ -130,13 +130,13 @@ export default function MentorDashboard() {
   const [isTogglingZoom, setIsTogglingZoom] = useState(false);
 
   const fetchZoomStatus = useCallback(() => {
-    fetch('http://localhost:5000/api/get_zoom_status')
+  fetch('/api/get_zoom_status') 
     .then(res => res.json())
-      .then(data => {
-        if (data.status === "success") setIsZoomEnabled(data.is_enabled);
-      })
-      .catch(err => console.error("Gagal mengambil status zoom:", err));
-  }, []);
+    .then(data => {
+      if (data.status === "success") setIsZoomEnabled(data.is_enabled);
+    })
+    .catch(err => console.error("Gagal mengambil status zoom:", err));
+}, []);
 
   const handleToggleZoom = async () => {
     if (!window.confirm(`Yakin ingin ${isZoomEnabled ? 'MENONAKTIFKAN' : 'MENGAKTIFKAN'} akses absensi Zoom?`)) return;
@@ -144,11 +144,12 @@ export default function MentorDashboard() {
     const newState = !isZoomEnabled;
     
     try {
-      const response = await fetch('http://localhost:5000/api/update_zoom_status', {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ is_enabled: newState })
-    });
+      // 🚀 MENGGUNAKAN LINK LIVE BACKEND
+      const response = await fetch('/api/update_zoom_status', {
+        method: "POST", 
+        headers: { "Content-Type": "application/json" }, 
+        body: JSON.stringify({ is_enabled: newState })
+      });
       const result = await response.json();
       
       if (result.status === "success") {
