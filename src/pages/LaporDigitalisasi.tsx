@@ -164,7 +164,7 @@ export default function LaporDigitalisasi() {
         <div className="flex items-center gap-2">
           <span className="text-xs sm:text-sm font-medium text-emerald-700/70 hidden sm:inline">Mahasiswa</span>
           <ChevronRight size={16} className="text-emerald-300 hidden sm:inline" />
-          <span className="text-xs sm:text-sm font-bold text-emerald-950 hidden sm:inline">Lapor Digitalisasi</span>
+          <span className="text-xs sm:text-sm font-bold text-emerald-950 hidden sm:inline">Task Lists</span>
         </div>
       </header>
 
