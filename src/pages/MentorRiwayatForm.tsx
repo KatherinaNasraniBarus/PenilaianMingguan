@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Laptop, Calendar, Trash2, CheckCircle, XCircle, Loader2, ChevronRight, Hash, ClipboardList , Edit3, AlertTriangle } from "lucide-react";
+import { Laptop, Calendar, Trash2, CheckCircle, XCircle, Loader2, ChevronRight, Hash, ClipboardList , Edit3, AlertTriangle, CalendarClock, Clock, Power } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import logo from "../image/bpjstk.png";
@@ -9,13 +9,12 @@ export default function MentorRiwayatForm() {
   const [listForm, setListForm] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // 🚀 STATE UNTUK POP-UP HAPUS
   const [formToDelete, setFormToDelete] = useState<number | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
   const fetchRiwayat = () => {
     setLoading(true);
-    fetch("https://api-penilaian.vercel.app/admin_get_all_forms.php")
+    fetch(`https://api-penilaian.vercel.app/admin_get_all_forms.php?t=${new Date().getTime()}`)
       .then((r) => r.json())
       .then((data) => {
         if (data.status === "success") setListForm(data.data || []);
@@ -28,22 +27,19 @@ export default function MentorRiwayatForm() {
     fetchRiwayat();
   }, []);
 
-  // 🚀 FUNGSI KETIKA TOMBOL HAPUS DIKLIK (HANYA MEMUNCULKAN POP-UP)
   const handleDeleteClick = (id: number) => {
     setFormToDelete(id);
   };
 
-  // 🚀 FUNGSI EKSEKUSI HAPUS ASLI
   const confirmDelete = () => {
     if (formToDelete === null) return;
-    
     setIsDeleting(true);
     fetch(`https://api-penilaian.vercel.app/admin_delete_form.php?id=${formToDelete}`)
       .then(r => r.json())
       .then(data => {
         if (data.status === "success") {
           setListForm(listForm.filter(f => f.id !== formToDelete));
-          setFormToDelete(null); // Tutup pop-up setelah sukses
+          setFormToDelete(null); 
         } else {
           alert("Gagal menghapus: " + data.message);
         }
@@ -52,10 +48,46 @@ export default function MentorRiwayatForm() {
       .finally(() => setIsDeleting(false));
   };
 
+  // 🚀 FUNGSI BARU: Mengubah Status Aktif/Nonaktif
+  const toggleStatus = (id: number, currentStatus: string | number) => {
+    // Jika sedang 1, ubah jadi 0. Jika sedang 0, ubah jadi 1.
+    const newStatus = currentStatus.toString() === "1" ? 0 : 1;
+    
+    // Update UI sementara biar terlihat instan (Optimistic UI)
+    setListForm(listForm.map(f => f.id === id ? { ...f, is_active: newStatus.toString() } : f));
+
+    fetch("https://api-penilaian.vercel.app/admin_toggle_status.php", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id, is_active: newStatus })
+    })
+    .then(r => r.json())
+    .then(data => {
+      if (data.status !== "success") {
+        // Jika server gagal, kembalikan ke status awal
+        alert("❌ Gagal mengubah status form.");
+        setListForm(listForm.map(f => f.id === id ? { ...f, is_active: currentStatus.toString() } : f));
+      }
+    })
+    .catch(() => {
+      alert("Terjadi kesalahan koneksi!");
+      setListForm(listForm.map(f => f.id === id ? { ...f, is_active: currentStatus.toString() } : f));
+    });
+  };
+
+  const formatTanggalAman = (tgl: string | null | undefined, isDeadline = false) => {
+    if (!tgl || tgl === "0000-00-00 00:00:00") return "Waktu tidak tercatat";
+    const formatString = tgl.replace(" ", "T") + (isDeadline ? "" : "Z");
+    const d = new Date(formatString); 
+    if (isNaN(d.getTime())) return "Format salah";
+    return d.toLocaleString('id-ID', { 
+      day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' 
+    }).replace(/\./g, ':') + " WIB";
+  };
+
   return (
     <div className="min-h-screen bg-slate-50 pb-20 relative">
       
-      {/* 🚀 POP-UP KONFIRMASI HAPUS MODERN */}
       <AnimatePresence>
         {formToDelete !== null && (
           <motion.div 
@@ -98,7 +130,6 @@ export default function MentorRiwayatForm() {
         )}
       </AnimatePresence>
 
-      {/* ─── HEADER NAVBAR ─── */}
       <header className="h-16 bg-white/90 backdrop-blur-md border-b border-slate-200 flex items-center justify-between lg:justify-end px-6 lg:px-8 sticky top-0 z-30 shrink-0 lg:pl-8 pl-16 shadow-sm">
         <div className="flex lg:hidden items-center h-full">
           <img src={logo} alt="BPJS TK" className="h-10 w-auto object-contain" />
@@ -114,7 +145,7 @@ export default function MentorRiwayatForm() {
         <div className="mb-8 mt-2">
           <h1 className="text-2xl sm:text-4xl font-black text-slate-900 flex items-center gap-3">
            <div className="p-3 bg-blue-600 text-white rounded-2xl shadow-lg shadow-blue-100"><ClipboardList size={28} /></div>
-            Monitoring Form
+           Monitoring Form
           </h1>
           <p className="text-slate-500 mt-2 font-medium">Kelola antrean tugas yang muncul di aplikasi mahasiswa.</p>
         </div>
@@ -136,25 +167,44 @@ export default function MentorRiwayatForm() {
                 animate={{ opacity: 1, y: 0 }} 
                 transition={{ delay: index * 0.05 }}
                 key={form.id} 
-                className="bg-white rounded-[2.5rem] border border-slate-200 p-7 shadow-sm hover:shadow-xl transition-all relative overflow-hidden group"
+                className={`bg-white rounded-[2.5rem] border ${form.is_active === "1" ? 'border-slate-200' : 'border-red-100 bg-red-50/20'} p-7 shadow-sm hover:shadow-xl transition-all relative overflow-hidden group flex flex-col`}
               >
-                <div className={`absolute top-0 right-0 w-24 h-24 -mr-8 -mt-8 rounded-full opacity-10 ${form.is_active === "1" ? 'bg-emerald-500' : 'bg-slate-500'}`}></div>
+                <div className={`absolute top-0 right-0 w-24 h-24 -mr-8 -mt-8 rounded-full opacity-10 ${form.is_active === "1" ? 'bg-emerald-500' : 'bg-red-500'}`}></div>
 
-                <div className="flex justify-between items-center mb-6">
-                  <div className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest flex items-center gap-2 ${form.is_active === "1" ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' : 'bg-slate-50 text-slate-400 border border-slate-100'}`}>
-                    {form.is_active === "1" ? <CheckCircle size={12} /> : <XCircle size={12} />}
-                    {form.is_active === "1" ? "Aktif di HP" : "Nonaktif"}
-                  </div>
+                <div className="flex justify-between items-start mb-4">
+                  {/* 🚀 INI DIA TOMBOL SAKLARNYA! */}
+                  <button 
+                    onClick={() => toggleStatus(form.id, form.is_active)}
+                    title={form.is_active === "1" ? "Klik untuk mematikan form ini" : "Klik untuk menghidupkan form ini"}
+                    className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest flex items-center gap-2 transition-all hover:scale-105 active:scale-95 shadow-sm border ${form.is_active === "1" ? 'bg-emerald-50 text-emerald-600 border-emerald-200 hover:bg-emerald-100' : 'bg-red-50 text-red-500 border-red-200 hover:bg-red-100'}`}
+                  >
+                    <Power size={14} />
+                    {form.is_active === "1" ? "Status: Aktif" : "Status: Nonaktif"}
+                  </button>
+
                   <span className="text-xs font-mono font-bold text-slate-300">ID #{form.id}</span>
                 </div>
 
-                <h3 className="text-2xl font-black text-slate-800 leading-tight mb-4">{form.minggu}</h3>
+                <h3 className={`text-2xl font-black leading-tight mb-1 ${form.is_active === "1" ? 'text-slate-800' : 'text-slate-500'}`}>
+                  {form.minggu}
+                </h3>
+                <span className={`text-xs font-bold px-2.5 py-1 rounded-md w-fit mb-5 ${form.is_active === "1" ? 'text-purple-600 bg-purple-50' : 'text-slate-500 bg-slate-100'}`}>
+                  {form.keterangan || "Tugas Digitalisasi"}
+                </span>
                 
-                <div className="space-y-3 mb-8">
+                <div className={`space-y-3 mb-8 flex-1 ${form.is_active === "0" && 'opacity-60'}`}>
                    <div className="flex items-center gap-3 text-sm font-bold text-slate-500">
-                      <div className="p-1.5 bg-blue-50 text-blue-600 rounded-lg"><Calendar size={14} /></div>
-                      Jadwal: {new Date(form.tanggal_buka).toLocaleString('id-ID', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                      <div className="p-1.5 bg-blue-50 text-blue-600 rounded-lg"><Clock size={14} /></div>
+                      Dibuat: {formatTanggalAman(form.tanggal_buka)}
                    </div>
+                   
+                   {form.deadline && form.deadline !== "0000-00-00 00:00:00" && (
+                     <div className="flex items-center gap-3 text-sm font-bold text-red-500">
+                        <div className="p-1.5 bg-red-50 text-red-500 rounded-lg"><CalendarClock size={14} /></div>
+                        Batas: {formatTanggalAman(form.deadline, true)}
+                     </div>
+                   )}
+
                    <div className="flex items-center gap-3 text-sm font-bold text-slate-500">
                       <div className="p-1.5 bg-emerald-50 text-emerald-600 rounded-lg"><Hash size={14} /></div>
                       {JSON.parse(form.struktur_form || "[]").length} Pertanyaan
@@ -162,7 +212,6 @@ export default function MentorRiwayatForm() {
                 </div>
 
                 <div className="flex gap-3">
-                  {/* 🚀 TOMBOL HAPUS SEKARANG MEMANGGIL FUNGSI handleDeleteClick */}
                   <button onClick={() => handleDeleteClick(form.id)} className="flex-1 flex items-center justify-center gap-2 py-4 bg-red-50 text-red-600 rounded-2xl font-black text-xs hover:bg-red-600 hover:text-white transition-all">
                     <Trash2 size={16} /> Hapus
                   </button>

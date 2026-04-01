@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Laptop, Send, Loader2, FileText, Link as LinkIcon, CheckCircle2, ChevronRight, ArrowLeft } from "lucide-react";
+import { Laptop, Send, Loader2, FileText, Link as LinkIcon, CheckCircle2, ChevronRight, ArrowLeft, CalendarClock, AlertCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import logo from "../image/bpjstk.png";
@@ -10,11 +10,9 @@ export default function LaporDigitalisasi() {
   const [userName, setUserName] = useState("");
   const [userNim, setUserNim]   = useState("");
   
-  // 🚀 STATE BARU UNTUK PILIHAN TUGAS
   const [availableTasks, setAvailableTasks] = useState<any[]>([]);
   const [selectedTask, setSelectedTask]     = useState<any | null>(null);
 
-  // State untuk Dynamic Form (Diisi ketika tugas dipilih)
   const [formMinggu, setFormMinggu]   = useState("");
   const [formFields, setFormFields]   = useState<any[]>([]);
   const [formData, setFormData]       = useState<Record<string, string>>({});
@@ -28,7 +26,6 @@ export default function LaporDigitalisasi() {
 
   const TARGET_MENTOR = "BOY TOBING";
 
-  // 🚀 FUNGSI BARU UNTUK MENGAMBIL DAFTAR TUGAS AKTIF
   const fetchActiveTasks = (nim: string) => {
     setIsLoadingForm(true);
     fetch(`https://api-penilaian.vercel.app/get_form_active.php?nim=${nim}&t=${new Date().getTime()}`)  
@@ -68,15 +65,25 @@ export default function LaporDigitalisasi() {
     fetchActiveTasks(nim);
   }, [navigate]);
 
-  // 🚀 FUNGSI KETIKA MAHASISWA MEMILIH TUGAS
+  // 🚀 PERBAIKAN FATAL ERROR: Membuat fungsi ini kebal dari data kosong/rusak
   const handleSelectTask = (task: any) => {
     setSelectedTask(task);
     setFormMinggu(task.minggu);
-    setFormFields(task.form);
     
-    // Siapkan kotak kosong sesuai form yang dipilih
+    // Pastikan form selalu berupa Array agar React tidak pingsan (layar putih)
+    let parsedFields: any[] = [];
+    if (Array.isArray(task.form)) {
+      parsedFields = task.form;
+    } else if (typeof task.struktur_form === 'string') {
+      try { parsedFields = JSON.parse(task.struktur_form); } catch(e) {}
+    } else if (typeof task.form === 'string') {
+      try { parsedFields = JSON.parse(task.form); } catch(e) {}
+    }
+    
+    setFormFields(parsedFields);
+    
     const initialData: Record<string, string> = {};
-    task.form.forEach((field: any) => {
+    parsedFields.forEach((field: any) => {
       initialData[field.id] = "";
     });
     setFormData(initialData);
@@ -107,7 +114,7 @@ export default function LaporDigitalisasi() {
         setSubmittedWeekName(formMinggu);
         setShowSuccessModal(true);
         setFormData({});
-        setSelectedTask(null); // 🚀 KEMBALI KE MENU PILIHAN SETELAH SUKSES
+        setSelectedTask(null); 
         fetchActiveTasks(userNim); 
       } else {
         alert("❌ Gagal menyimpan laporan: " + data.message);
@@ -117,10 +124,23 @@ export default function LaporDigitalisasi() {
     .finally(() => setIsSubmitting(false));
   };
 
+  // 🚀 PERBAIKAN FORMAT DEADLINE YANG LEBIH AMAN
+  const formatDeadline = (deadlineStr: string) => {
+    if (!deadlineStr || deadlineStr === "0000-00-00 00:00:00") return "Tidak ada batas waktu";
+    
+    // 🚀 PERBAIKAN: Jangan tambahkan "Z" karena deadline dibuat dari waktu lokal Mentor
+    const d = new Date(deadlineStr.replace(" ", "T")); 
+    
+    if (isNaN(d.getTime())) return "Format salah";
+    return d.toLocaleDateString("id-ID", {
+      day: "2-digit", month: "short", year: "numeric", 
+      hour: "2-digit", minute: "2-digit"
+    }).replace(/\./g, ':') + ' WIB';
+  };
+
   return (
     <div className="min-h-screen bg-emerald-50/30 pb-20 selection:bg-emerald-200 relative">
       
-      {/* 🚀 POP-UP MODAL SUKSES MENGIRIM LAPORAN */}
       <AnimatePresence>
         {showSuccessModal && (
           <motion.div 
@@ -153,18 +173,14 @@ export default function LaporDigitalisasi() {
         )}
       </AnimatePresence>
 
-      {/* ─── HEADER NAVBAR (SUDAH DIPERBAIKI) ─── */}
       <header className="h-16 bg-white/90 backdrop-blur-md border-b border-emerald-100 flex items-center justify-between lg:justify-end px-6 lg:px-8 sticky top-0 z-30 shrink-0 lg:pl-8 pl-16 shadow-sm">
-        {/* Logo BPJS Muncul Khusus di Layar HP/Mobile */}
         <div className="flex lg:hidden items-center h-full">
           <img src={logo} alt="BPJS Ketenagakerjaan" className="h-10 w-auto object-contain" />
         </div>
-        
-        {/* Breadcrumb Teks Muncul Khusus di Layar Laptop/Desktop */}
         <div className="flex items-center gap-2">
           <span className="text-xs sm:text-sm font-medium text-emerald-700/70 hidden sm:inline">Mahasiswa</span>
           <ChevronRight size={16} className="text-emerald-300 hidden sm:inline" />
-          <span className="text-xs sm:text-sm font-bold text-emerald-950 hidden sm:inline">Task Lists</span>
+          <span className="text-xs sm:text-sm font-bold text-emerald-950 hidden sm:inline">Lapor Digitalisasi</span>
         </div>
       </header>
 
@@ -206,7 +222,6 @@ export default function LaporDigitalisasi() {
                   </button>
                 </motion.div>
 
-              // 🚀 TAMPILAN 1: LAYAR PILIH TUGAS
               ) : !selectedTask ? (
                 <motion.div key="pilih-tugas" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
                   <div className="mb-6">
@@ -225,10 +240,18 @@ export default function LaporDigitalisasi() {
                         <span className="inline-block px-3 py-1 bg-emerald-100 text-emerald-700 font-black text-[10px] uppercase tracking-widest rounded-lg mb-3 w-fit">
                           {task.minggu}
                         </span>
+                        
                         <h3 className="text-lg font-black text-emerald-950 leading-tight mb-4 flex-1">
                           {task.keterangan || "Tugas Digitalisasi"}
                         </h3>
-                        <div className="flex items-center gap-2 text-sm font-bold text-slate-400 group-hover:text-emerald-600 transition-colors">
+
+                        {task.deadline && task.deadline !== "0000-00-00 00:00:00" && (
+                          <div className="mb-4 flex items-center gap-1.5 text-xs font-bold text-red-500 bg-red-50 px-2.5 py-1.5 rounded-lg w-fit border border-red-100">
+                            <CalendarClock size={14} /> Batas: {formatDeadline(task.deadline)}
+                          </div>
+                        )}
+
+                        <div className="flex items-center gap-2 text-sm font-bold text-slate-400 group-hover:text-emerald-600 transition-colors pt-2 border-t border-slate-50">
                           Mulai Kerjakan <ChevronRight size={16} className="group-hover:translate-x-1 transition-transform" />
                         </div>
                       </motion.button>
@@ -236,25 +259,33 @@ export default function LaporDigitalisasi() {
                   </div>
                 </motion.div>
 
-              // 🚀 TAMPILAN 2: LAYAR FORM PENGISIAN
               ) : (
                 <motion.form key="form" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} onSubmit={submitDigitalisasi} className="space-y-8">
                   
-                  {/* TOMBOL KEMBALI */}
                   <button type="button" onClick={() => setSelectedTask(null)} className="flex items-center gap-2 text-sm font-bold text-slate-400 hover:text-emerald-600 transition-colors group">
                     <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" /> Kembali ke Pilihan Tugas
                   </button>
 
-                  <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 bg-emerald-50/50 p-4 rounded-2xl border border-emerald-100">
-                    <span className="px-4 py-1.5 bg-emerald-600 text-white font-black text-xs uppercase tracking-widest rounded-lg shrink-0 w-fit">
-                      {formMinggu}
-                    </span>
-                    <span className="font-bold text-emerald-900 text-sm sm:text-base">
-                      {selectedTask.keterangan || "Laporan Tugas Digitalisasi"}
-                    </span>
+                  <div className="flex flex-col gap-3 sm:gap-4 bg-emerald-50/50 p-5 rounded-2xl border border-emerald-100">
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+                      <span className="px-4 py-1.5 bg-emerald-600 text-white font-black text-xs uppercase tracking-widest rounded-lg shrink-0 w-fit">
+                        {formMinggu}
+                      </span>
+                      <span className="font-bold text-emerald-900 text-sm sm:text-base">
+                        {selectedTask.keterangan || "Laporan Tugas Digitalisasi"}
+                      </span>
+                    </div>
+                    
+                    {selectedTask.deadline && selectedTask.deadline !== "0000-00-00 00:00:00" && (
+                      <div className="flex items-start gap-2 text-sm font-bold text-red-600 bg-red-100/50 p-3 rounded-xl border border-red-200">
+                        <AlertCircle size={18} className="shrink-0 mt-0.5" />
+                        <p>Pastikan Anda mengirim laporan sebelum <strong>{formatDeadline(selectedTask.deadline)}</strong> agar tidak tercatat terlambat.</p>
+                      </div>
+                    )}
                   </div>
 
-                  {formFields.map((field, index) => (
+                  {/* 🚀 PERBAIKAN: Gunakan formFields?.map agar tidak crash jika formFields kosong */}
+                  {formFields?.map((field, index) => (
                     <motion.div 
                       key={field.id}
                       initial={{ opacity: 0, y: 15 }}
@@ -294,11 +325,18 @@ export default function LaporDigitalisasi() {
                     </motion.div>
                   ))}
                   
+                  {/* Jika form kosong / belum diset mentor */}
+                  {formFields?.length === 0 && (
+                    <div className="text-center py-10">
+                      <p className="text-emerald-600 font-bold">Mentor belum membuat pertanyaan untuk tugas ini.</p>
+                    </div>
+                  )}
+                  
                   <motion.button 
                     whileHover={{ scale: 1.01 }}
                     whileTap={{ scale: 0.98 }}
                     type="submit" 
-                    disabled={isSubmitting} 
+                    disabled={isSubmitting || formFields?.length === 0} 
                     className="w-full flex justify-center items-center gap-3 bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-700 hover:to-emerald-600 disabled:from-emerald-300 disabled:to-emerald-300 text-white py-5 rounded-2xl font-black transition-all mt-10 text-lg shadow-[0_8px_20px_rgb(16,185,129,0.25)] hover:shadow-[0_8px_25px_rgb(16,185,129,0.4)]"
                   >
                     {isSubmitting ? (
