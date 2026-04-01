@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Laptop, Calendar, Trash2, CheckCircle, XCircle, Loader2, ChevronRight, Hash, ClipboardList , Edit3, AlertTriangle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import logo from "../image/bpjstk.jpeg";
+import logo from "../image/bpjstk.png";
 
 export default function MentorRiwayatForm() {
   const navigate = useNavigate();

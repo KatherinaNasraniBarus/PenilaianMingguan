@@ -2,7 +2,7 @@ import { ComponentType } from "react";
 import { LogOut, UserCircle, X } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
-import logo from "../image/bpjstk.jpeg";
+import logo from "../image/bpjstk.png";
 
 export interface SidebarMenuItem {
   name: string;

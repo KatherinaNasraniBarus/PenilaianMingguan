@@ -19,7 +19,7 @@ import MentorRiwayatForm from './pages/MentorRiwayatForm';
 const studentMenuItems = [
   { name: "Dashboard",          path: "/dashboard",          icon: LayoutDashboard },
   { name: "Submit Report",      path: "/submit-report",      icon: ClipboardList   },
-  { name: "Lapor Digitalisasi", path: "/lapor-digitalisasi", icon: Laptop        },
+  { name: "Task Lists", path: "/lapor-digitalisasi", icon: Laptop        },
 ];
 
 // 🚀 KOMPONEN PEMBUNGKUS KHUSUS MENTOR & ADMIN
@@ -48,7 +48,7 @@ function MentorLayoutWrapper() {
       setMenuItems([
         { name: "Dashboard",          path: "/mentor/dashboard",          icon: LayoutDashboard },
         { name: "Penilaian",          path: "/mentor/rekap",              icon: ClipboardList   },
-        { name: "Cek Digitalisasi",   path: "/mentor/digitalisasi",       icon: Laptop          },
+        { name: "Periksa Tugas",   path: "/mentor/digitalisasi",       icon: Laptop          },
         { name: "Buat Form",          path: "/mentor/form-builder",       icon: FilePlus        },
         // 🚀 IKON "RIWAYAT FORM" DIGANTI JADI HISTORY (JAM)
         { name: "Riwayat Form",       path: "/mentor/riwayat-form",       icon: History         }, 

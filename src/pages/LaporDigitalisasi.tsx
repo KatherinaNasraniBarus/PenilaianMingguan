@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Laptop, Send, Loader2, FileText, Link as LinkIcon, CheckCircle2, ChevronRight, ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
+import logo from "../image/bpjstk.png";
 
 export default function LaporDigitalisasi() {
   const navigate = useNavigate();
@@ -152,7 +153,20 @@ export default function LaporDigitalisasi() {
         )}
       </AnimatePresence>
 
-      <header className="h-16 bg-white/80 backdrop-blur-lg border-b border-emerald-100 flex items-center px-4 sm:px-6 lg:px-8 sticky top-0 z-30 shadow-[0_4px_20px_rgb(0,0,0,0.02)]"></header>
+      {/* ─── HEADER NAVBAR (SUDAH DIPERBAIKI) ─── */}
+      <header className="h-16 bg-white/90 backdrop-blur-md border-b border-emerald-100 flex items-center justify-between lg:justify-end px-6 lg:px-8 sticky top-0 z-30 shrink-0 lg:pl-8 pl-16 shadow-sm">
+        {/* Logo BPJS Muncul Khusus di Layar HP/Mobile */}
+        <div className="flex lg:hidden items-center h-full">
+          <img src={logo} alt="BPJS Ketenagakerjaan" className="h-10 w-auto object-contain" />
+        </div>
+        
+        {/* Breadcrumb Teks Muncul Khusus di Layar Laptop/Desktop */}
+        <div className="flex items-center gap-2">
+          <span className="text-xs sm:text-sm font-medium text-emerald-700/70 hidden sm:inline">Mahasiswa</span>
+          <ChevronRight size={16} className="text-emerald-300 hidden sm:inline" />
+          <span className="text-xs sm:text-sm font-bold text-emerald-950 hidden sm:inline">Lapor Digitalisasi</span>
+        </div>
+      </header>
 
       <div className="p-4 sm:p-6 lg:p-8 max-w-4xl mx-auto w-full mt-4 sm:mt-6">
         
@@ -165,7 +179,7 @@ export default function LaporDigitalisasi() {
               <Laptop size={32} />
             </div>
             <div>
-              <h1 className="text-2xl sm:text-4xl font-black text-emerald-950 tracking-tight">Lapor Digitalisasi</h1>
+              <h1 className="text-2xl sm:text-4xl font-black text-emerald-950 tracking-tight">Task Lists</h1>
               <p className="text-sm sm:text-base font-bold text-emerald-700/60 mt-1">Selesaikan misi tugas Anda minggu ini.</p>
             </div>
           </div>

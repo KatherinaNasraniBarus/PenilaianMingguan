@@ -5,7 +5,7 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import logo from "../image/bpjstk.jpeg";
+import logo from "../image/bpjstk.png";
 
 export default function SubmitReport() {
   const navigate = useNavigate();

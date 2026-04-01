@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { Download, Search, ChevronRight, ChevronDown, ChevronUp, ExternalLink, Filter } from "lucide-react";
-import logo from "../image/bpjstk.jpeg";
+import logo from "../image/bpjstk.png";
 import * as XLSX from "xlsx";
 
 interface Student {

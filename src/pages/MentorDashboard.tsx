@@ -7,7 +7,7 @@ import {
   PlusCircle, Search, MessageCircle, FileText, Pencil, RefreshCcw, Monitor
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion"; 
-import logo from "../image/bpjstk.jpeg";
+import logo from "../image/bpjstk.png";
 import * as XLSX from 'xlsx';
 
 interface Student {

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Laptop, Search, Loader2, User, CalendarDays, FileText, ChevronRight, Filter, Tags } from "lucide-react";
-import logo from "../image/bpjstk.jpeg";
+import logo from "../image/bpjstk.png";
 
 export default function MentorLaporanDigital() {
   const [laporan, setLaporan] = useState<any[]>([]);
@@ -74,7 +74,7 @@ export default function MentorLaporanDigital() {
         <div className="flex items-center gap-2">
           <span className="text-xs sm:text-sm font-medium text-slate-500 hidden sm:inline">Portal Mentor</span>
           <ChevronRight size={16} className="text-slate-400 hidden sm:inline" />
-          <span className="text-xs sm:text-sm font-bold text-slate-800 hidden sm:inline">Cek Digitalisasi</span>
+          <span className="text-xs sm:text-sm font-bold text-slate-800 hidden sm:inline">Periksa Tugas</span>
         </div>
       </header>
 
@@ -84,7 +84,7 @@ export default function MentorLaporanDigital() {
           <div>
             <h1 className="text-2xl sm:text-3xl font-black text-slate-800 flex items-center gap-3">
               <div className="p-2.5 bg-blue-600 text-white rounded-2xl"><Laptop size={24} /></div>
-              Laporan Digitalisasi
+              Laporan
             </h1>
             <p className="text-slate-500 mt-1.5 font-medium">Pantau dan periksa hasil tugas mahasiswa.</p>
           </div>

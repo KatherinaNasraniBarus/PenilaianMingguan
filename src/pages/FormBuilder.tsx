@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { PlusCircle, Save, FilePlus, Edit2, CornerDownRight, X, Loader2, ChevronRight, CheckCircle2 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import logo from "../image/bpjstk.jpeg";
+import logo from "../image/bpjstk.png";
 
 export default function FormBuilder() {
   const navigate = useNavigate();

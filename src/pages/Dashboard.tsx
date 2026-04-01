@@ -1,7 +1,7 @@
 import { ChevronRight, Users, Heart, Megaphone, Video, ExternalLink, Link as LinkIcon, History, UserCheck } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import logo from "../image/bpjstk.jpeg";
+import logo from "../image/bpjstk.png";
 
 interface Report {
   minggu: string;
