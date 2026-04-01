@@ -234,5 +234,3 @@ export default function MentorLaporanDigital() {
     </div>
   );
 }
-
-//hai
