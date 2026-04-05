@@ -118,13 +118,10 @@ function ConfirmModal({ open, mode, nama, onConfirm, onCancel }: {
       <div
         className="bg-white w-full sm:w-80 sm:rounded-2xl rounded-t-2xl overflow-hidden shadow-xl"
         onClick={e => e.stopPropagation()}>
-        {/* Accent bar */}
         <div className={`h-1 w-full ${accent}`} />
-        {/* Handle */}
         <div className="pt-3 pb-1 flex justify-center">
           <div className={`w-8 h-1 rounded-full ${handle}`} />
         </div>
-        {/* Content */}
         <div className="px-6 pt-3 pb-6">
           <p className="text-base font-bold text-slate-900 text-center mb-1">{title}</p>
           <p className="text-sm text-slate-400 text-center mb-6 leading-relaxed">{message}</p>
@@ -151,6 +148,7 @@ export default function MentorRekap() {
   const [search, setSearch]           = useState("");
   const [filter, setFilter]           = useState<FilterStatus>("semua");
   const [loading, setLoading]         = useState(true);
+  const [error, setError]             = useState(""); // ✅ BARU: tampilkan error jika fetch gagal
   const [mentorName, setMentorName]   = useState("");
   const [mentorId, setMentorId]       = useState<number | null>(null);
   const [userRole, setUserRole]       = useState("mentor");
@@ -173,17 +171,28 @@ export default function MentorRekap() {
     setMentorId(mentor.id);
     setUserRole(mentor.role ?? "mentor");
     setLoading(true);
+    setError("");
 
-    fetch(`https://api-penilaian.vercel.app/api-penilaian/get_mahasiswa_by_mentor.php?mentor_id=${mentor.id}&rekap=1`)
-      .then(r => r.json())
+    // ✅ FIX UTAMA: Hapus "/api-penilaian/" dari URL — path duplikat menyebabkan 404
+    // SEBELUM (SALAH): https://api-penilaian.vercel.app/api-penilaian/get_mahasiswa_by_mentor.php
+    // SESUDAH (BENAR): https://api-penilaian.vercel.app/get_mahasiswa_by_mentor.php
+    fetch(`https://api-penilaian.vercel.app/get_mahasiswa_by_mentor.php?mentor_id=${mentor.id}&rekap=1`)
+      .then(r => {
+        if (!r.ok) throw new Error(`HTTP ${r.status}: ${r.statusText}`);
+        return r.json();
+      })
       .then(d => {
         if (d.status === "success") {
           setStudents((d.data ?? []).map(normalize));
         } else {
+          setError("Gagal memuat data: " + (d.message || "Unknown error"));
           console.error("API error:", d.message);
         }
       })
-      .catch(err => console.error("Fetch error:", err))
+      .catch(err => {
+        setError("Gagal menghubungi server. Periksa koneksi atau coba refresh.");
+        console.error("Fetch error:", err);
+      })
       .finally(() => setLoading(false));
   }, []);
 
@@ -211,8 +220,7 @@ export default function MentorRekap() {
     setStudents(prev => prev.map(s => s.id === id ? { ...s, [field]: value } : s));
   };
 
-  // Buka popup — tidak ada window.confirm
-  const handleVerifikasi     = (s: Student) => setModal({ open: true, student: s, mode: "verifikasi" });
+  const handleVerifikasi      = (s: Student) => setModal({ open: true, student: s, mode: "verifikasi" });
   const handleResetVerifikasi = (s: Student) => setModal({ open: true, student: s, mode: "batalkan" });
 
   const handleModalConfirm = async () => {
@@ -303,7 +311,6 @@ export default function MentorRekap() {
   return (
     <div className="flex flex-col min-h-full bg-slate-50">
 
-      {/* Popup konfirmasi */}
       <ConfirmModal
         open={modal.open}
         mode={modal.mode}
@@ -312,7 +319,6 @@ export default function MentorRekap() {
         onCancel={() => setModal(m => ({ ...m, open: false }))}
       />
 
-      {/* Topbar */}
       <header className="h-16 bg-white border-b border-emerald-100 flex items-center justify-between lg:justify-end px-6 lg:px-8 sticky top-0 z-30 shrink-0 pl-16 lg:pl-8 shadow-sm">
         <div className="flex lg:hidden items-center h-full">
           <img src={logo} alt="BPJS TK" className="h-10 w-auto object-contain" />
@@ -327,6 +333,17 @@ export default function MentorRekap() {
       <div className="p-4 sm:p-6 lg:p-8 max-w-5xl mx-auto w-full space-y-4 sm:space-y-5 pb-24">
 
         <h1 className="text-xl sm:text-2xl lg:text-3xl font-black text-slate-900">Penilaian</h1>
+
+        {/* ✅ BARU: Error state yang informatif */}
+        {error && (
+          <div className="bg-red-50 border border-red-200 rounded-2xl p-4 flex items-start gap-3">
+            <div className="w-5 h-5 rounded-full bg-red-500 text-white flex items-center justify-center text-xs font-bold shrink-0 mt-0.5">!</div>
+            <div>
+              <p className="text-sm font-bold text-red-800">{error}</p>
+              <button onClick={fetchStudents} className="text-xs text-red-600 underline mt-1">Coba lagi</button>
+            </div>
+          </div>
+        )}
 
         {/* Stat cards */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -375,7 +392,7 @@ export default function MentorRekap() {
           </div>
         </div>
 
-        {/* Column header — hidden on mobile */}
+        {/* Column header */}
         {!loading && filtered.length > 0 && (
           <div className="hidden sm:flex items-center gap-3 px-5 select-none">
             <div className="flex-1 pl-12 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Mahasiswa</div>
@@ -390,11 +407,18 @@ export default function MentorRekap() {
 
         {/* Rows */}
         {loading ? (
-          <div className="flex justify-center py-20">
+          <div className="flex flex-col items-center justify-center py-20 gap-3">
             <div className="w-8 h-8 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin" />
+            <p className="text-sm text-slate-500 font-medium">Memuat data penilaian...</p>
           </div>
-        ) : filtered.length === 0 ? (
-          <div className="text-center py-20 text-slate-400 text-sm">Tidak ada data.</div>
+        ) : !error && filtered.length === 0 ? (
+          <div className="text-center py-20 bg-white rounded-2xl border border-slate-200">
+            <p className="text-slate-400 text-sm font-medium">
+              {students.length === 0
+                ? "Belum ada mahasiswa yang terdaftar di bimbingan Anda."
+                : "Tidak ada data yang cocok dengan filter."}
+            </p>
+          </div>
         ) : (
           <>
             <div className="space-y-2">
@@ -414,6 +438,7 @@ export default function MentorRekap() {
                       : "bg-white border-slate-200 hover:border-slate-300"
                     }`}>
 
+                    {/* Desktop row */}
                     <div className="hidden sm:flex items-center gap-3 px-5 py-3.5">
 
                       <button
@@ -458,13 +483,11 @@ export default function MentorRekap() {
 
                       <div className="w-36 flex flex-col items-center gap-1">
                         {isVerified ? (
-                          <>
-                            <button
-                              onClick={() => handleResetVerifikasi(s)}
-                              className="text-xs font-bold px-3 py-1.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition-all">
-                              ✓ Terverifikasi
-                            </button>
-                          </>
+                          <button
+                            onClick={() => handleResetVerifikasi(s)}
+                            className="text-xs font-bold px-3 py-1.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition-all">
+                            ✓ Terverifikasi
+                          </button>
                         ) : (
                           <button
                             onClick={() => handleVerifikasi(s)}
@@ -490,45 +513,32 @@ export default function MentorRekap() {
                         {isExpanded ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
                       </button>
                     </div>
-                    
-                    {/* ── Mobile row (FIXED UX) ── */}
+
+                    {/* Mobile row */}
                     <div className="sm:hidden px-4 py-3">
-                      {/* Header */}
                       <div className="flex items-center justify-between gap-2 mb-3">
                         <button
                           className="flex items-center gap-2.5 flex-1 min-w-0 text-left"
                           onClick={() => setExpandedId(isExpanded ? null : s.id)}
                         >
-                          <div
-                            className={`w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${
-                              isExpanded
-                                ? "bg-emerald-100 text-emerald-700"
-                                : isDinilai
-                                ? "bg-emerald-50 text-emerald-600"
-                                : "bg-slate-100 text-slate-600"
-                            }`}
-                          >
+                          <div className={`w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${
+                            isExpanded ? "bg-emerald-100 text-emerald-700"
+                            : isDinilai ? "bg-emerald-50 text-emerald-600"
+                            : "bg-slate-100 text-slate-600"
+                          }`}>
                             {initials(s.nama)}
                           </div>
-
                           <div className="min-w-0">
-                            <p className="text-sm font-bold text-slate-900 truncate">
-                              {s.nama}
-                            </p>
-                            <p className="text-xs font-mono text-slate-400">
-                              {s.nim}
-                            </p>
+                            <p className="text-sm font-bold text-slate-900 truncate">{s.nama}</p>
+                            <p className="text-xs font-mono text-slate-400">{s.nim}</p>
                           </div>
                         </button>
-
                         <div className="flex items-center gap-2 shrink-0">
                           <NilaiText val={p.total} />
                           <button
                             onClick={() => setExpandedId(isExpanded ? null : s.id)}
                             className={`w-7 h-7 flex items-center justify-center rounded-lg transition-all ${
-                              isExpanded
-                                ? "bg-emerald-500 text-white"
-                                : "bg-slate-100 text-slate-500"
+                              isExpanded ? "bg-emerald-500 text-white" : "bg-slate-100 text-slate-500"
                             }`}
                           >
                             {isExpanded ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
@@ -536,62 +546,45 @@ export default function MentorRekap() {
                         </div>
                       </div>
 
-                      {/* Detail */}
                       <div className="flex flex-col gap-2 text-xs bg-slate-50 border border-slate-200 rounded-xl p-3">
-                        
                         <div className="flex justify-between items-center">
                           <span className="text-slate-500">Aktivitas</span>
-                          <span className={`font-mono font-bold ${aktColor}`}>
-                            {p.aktivitas}
-                          </span>
+                          <span className={`font-mono font-bold ${aktColor}`}>{p.aktivitas}</span>
                         </div>
-
                         {userRole !== "admin" && (
                           <div className="flex justify-between items-center">
                             <span className="text-slate-500">Attitude</span>
-                            <NumberInput
-                              value={s.attitude}
-                              max={10}
-                              onChange={(v) => updateScore(s.id, "attitude", v)}
-                              onBlur={() => handleBlurSave(s)}
-                            />
+                            <NumberInput value={s.attitude} max={10}
+                              onChange={v => updateScore(s.id, "attitude", v)}
+                              onBlur={() => handleBlurSave(s)} />
                           </div>
                         )}
-
                         {userRole !== "admin" && (
                           <div className="flex justify-between items-center">
                             <span className="text-slate-500">Digitalisasi</span>
-                            <NumberInput
-                              value={s.digitalisasi}
-                              max={20}
-                              onChange={(v) => updateScore(s.id, "digitalisasi", v)}
-                              onBlur={() => handleBlurSave(s)}
-                            />
+                            <NumberInput value={s.digitalisasi} max={20}
+                              onChange={v => updateScore(s.id, "digitalisasi", v)}
+                              onBlur={() => handleBlurSave(s)} />
                           </div>
                         )}
                       </div>
 
-                      {/* Verifikasi */}
                       <div className="mt-3">
                         {isVerified ? (
-                          <button
-                            onClick={() => handleResetVerifikasi(s)}
-                            className="w-full text-xs font-bold py-2 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-200"
-                          >
+                          <button onClick={() => handleResetVerifikasi(s)}
+                            className="w-full text-xs font-bold py-2 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-200">
                             ✓ Terverifikasi (Tap untuk batal)
                           </button>
                         ) : (
-                          <button
-                            onClick={() => handleVerifikasi(s)}
-                            disabled={isVerifying}
-                            className="w-full text-xs font-bold py-2 rounded-xl bg-amber-50 text-amber-700 border border-amber-200 disabled:opacity-50"
-                          >
+                          <button onClick={() => handleVerifikasi(s)} disabled={isVerifying}
+                            className="w-full text-xs font-bold py-2 rounded-xl bg-amber-50 text-amber-700 border border-amber-200 disabled:opacity-50">
                             {isVerifying ? "Memproses..." : "Verifikasi Laporan"}
                           </button>
                         )}
                       </div>
                     </div>
 
+                    {/* Expanded detail */}
                     {isExpanded && (
                       <div className="border-t border-slate-100 px-4 sm:px-5 py-4">
                         <div className="grid grid-cols-2 sm:flex sm:items-center gap-3 sm:gap-0 mb-3 sm:mb-0">
