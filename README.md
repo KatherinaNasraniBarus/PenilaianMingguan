@@ -32,6 +32,10 @@ Pada halaman ini, Mentor dapat:
 
   Menyaring data berdasarkan minggu ke-berapa dan status laporan.
 
+* **Export Excel:**
+
+  Mengekspor data laporan mingguan mahasiswa magang, sesuai minggu yang dipilih. Data yang diekspor akan menjadi bentuk file excel.
+
   ![image alt](https://github.com/KatherinaNasraniBarus/PenilaianMingguan/blob/77eb19b80650192463c15ac371e917f7c836b156/src/image/Screen%20Dashboard%20Mentor.png)
 
   ## ![image alt](https://github.com/KatherinaNasraniBarus/PenilaianMingguan/blob/77eb19b80650192463c15ac371e917f7c836b156/src/image/Screen%20Dashboard%20Mentor%202.png)
@@ -43,14 +47,13 @@ Pada halaman ini, Mentor dapat:
   ## ![image alt](https://github.com/KatherinaNasraniBarus/PenilaianMingguan/blob/77eb19b80650192463c15ac371e917f7c836b156/src/image/Screen%20Dashboard%20Mentor%20(Riwayat).png)
 
 **4. Halaman Penilaian**
-* Akses menu **Penilaian** melalui *sidebar* di sebelah kiri.
-* Halaman ini digunakan untuk memantau status evaluasi mahasiswa, dengan metrik yang menampilkan: Total mahasiswa, jumlah yang Sudah dinilai, Belum dinilai, dan Laporan terverifikasi.
+
+Pada halaman ini, Mentor dapat:
+* **Melihat Statistik Laporan:**
+
+  Memantau jumlah **Total Mahasiswa** bimbingan, serta jumlah mahasiswa yang **Sudah Lapor** dan **Belum Lapor** pada minggu tertentu.
 
   ## ![image alt](https://github.com/KatherinaNasraniBarus/PenilaianMingguan/blob/77eb19b80650192463c15ac371e917f7c836b156/src/image/Screen%20Penilaian.png)
-
-**5. Export Excel**
-* Mentor dapat mengunduh rekap data mahasiswa ke dalam format `.xlsx` dengan mengklik tombol **"Export Excel"**.
-* Fitur ini tersedia di halaman **Dashboard** (untuk rekap status laporan & kehadiran) maupun di halaman **Penilaian**.
 
   ![image alt](https://github.com/KatherinaNasraniBarus/PenilaianMingguan/blob/77eb19b80650192463c15ac371e917f7c836b156/src/image/Screen%20Dashboard%20Mentor.png)
 
