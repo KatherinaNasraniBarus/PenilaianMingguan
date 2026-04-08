@@ -38,6 +38,9 @@ Pada halaman ini, Mentor dapat:
 
   ![image alt](https://github.com/KatherinaNasraniBarus/PenilaianMingguan/blob/77eb19b80650192463c15ac371e917f7c836b156/src/image/Screen%20Dashboard%20Mentor.png)
 
+  
+  ![image alt](https://github.com/KatherinaNasraniBarus/PenilaianMingguan/blob/77eb19b80650192463c15ac371e917f7c836b156/src/image/Screen%20Excel%20Laporan%20(Mentor).png)
+
   ## ![image alt](https://github.com/KatherinaNasraniBarus/PenilaianMingguan/blob/77eb19b80650192463c15ac371e917f7c836b156/src/image/Screen%20Dashboard%20Mentor%202.png)
 
 **3. Cek Riwayat Kehadiran**
@@ -56,9 +59,7 @@ Pada halaman ini, Mentor dapat:
   ## ![image alt](https://github.com/KatherinaNasraniBarus/PenilaianMingguan/blob/77eb19b80650192463c15ac371e917f7c836b156/src/image/Screen%20Penilaian.png)
 
   ![image alt](https://github.com/KatherinaNasraniBarus/PenilaianMingguan/blob/77eb19b80650192463c15ac371e917f7c836b156/src/image/Screen%20Dashboard%20Mentor.png)
-
-  ![image alt](https://github.com/KatherinaNasraniBarus/PenilaianMingguan/blob/77eb19b80650192463c15ac371e917f7c836b156/src/image/Screen%20Excel%20Laporan%20(Mentor).png)
-
+  
 ##
 
 ### 👨‍🎓 Mahasiswa
