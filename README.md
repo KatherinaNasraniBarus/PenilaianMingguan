@@ -195,3 +195,8 @@ Aturan mengisi Google Drive:
 * Pada halaman Dashboard, mahasiswa dapat melihat tabel atau daftar **Riwayat Laporan** untuk memantau status laporan mingguan yang sudah berhasil dikumpulkan.
   
 ![image alt](https://github.com/KatherinaNasraniBarus/PenilaianMingguan/blob/cfcbd36f8c10472ee8e7b2bf085eca63d6182700/src/image/Screen%20Dashboard%20Riwayat%20Mahasiswa.png)
+
+**8. Halaman Task Lists**
+* Pada halaman Task Lists, mahasiswa dapat melihat tugas yang diberikan mentor atau juga tempat pengumpulan dari tugas tersebut.
+  
+![image alt](https://github.com/KatherinaNasraniBarus/PenilaianMingguan/blob/30675acab159383ab9bfa23d60750fbc49984276/src/image/Screen%20Task%20Lists.png)
