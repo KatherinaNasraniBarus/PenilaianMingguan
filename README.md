@@ -51,14 +51,21 @@ Pada halaman ini, Mentor dapat:
 
 **4. Halaman Penilaian**
 
-Pada halaman ini, Mentor dapat:
-* **Melihat Statistik Laporan:**
+Halaman ini dibuat bagi Mentor untuk:
+* **Penilaian Akhir Mahasiswa:**
 
-  Memantau jumlah **Total Mahasiswa** bimbingan, serta jumlah mahasiswa yang **Sudah Lapor** dan **Belum Lapor** pada minggu tertentu.
+  Dengan mengikuti formula penilaian berdasarkan Mandatory USU:
 
-  ## ![image alt](https://github.com/KatherinaNasraniBarus/PenilaianMingguan/blob/77eb19b80650192463c15ac371e917f7c836b156/src/image/Screen%20Penilaian.png)
+  ![image_alt](https://github.com/KatherinaNasraniBarus/PenilaianMingguan/blob/9cf0d365ed48c7de62a757e9dc73ac83c7ebba95/src/image/Screen%20Formula%20Mandatory%20USU.png)
 
-  ![image alt](https://github.com/KatherinaNasraniBarus/PenilaianMingguan/blob/77eb19b80650192463c15ac371e917f7c836b156/src/image/Screen%20Dashboard%20Mentor.png)
+  Mentor mengisi penilaian pada bagian ATTITUDE, DIGITALISASI dan LAPORAN secara objektif.
+  Nilai akhir mahasiswa dapat dilihat melalui bagian NILAI dan jika LAPORAN sudah diverifikasi maka secara otomatis akan menambahkan 10 poin nilai Administrasi. (Sesuai instruksi formula penilaian)
+
+  ![image alt](https://github.com/KatherinaNasraniBarus/PenilaianMingguan/blob/e1de5518b2dde5a9bb4250607208a22971a67d31/src/image/Screen%20Penilaian%20Mentor.png)
+
+  Setelah itu, data nilai dapat diexport menjadi file excel yang mengikuti format formula penilaian.
+
+  ![image_alt](https://github.com/KatherinaNasraniBarus/PenilaianMingguan/blob/e1de5518b2dde5a9bb4250607208a22971a67d31/src/image/Screen%20Excel%20Penilaian%20Mentor.png)
   
 ##
 
