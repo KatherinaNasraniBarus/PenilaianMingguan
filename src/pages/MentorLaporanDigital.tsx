@@ -94,7 +94,7 @@ export default function MentorLaporanDigital() {
       <div className="p-4 sm:p-6 lg:p-8 space-y-6 max-w-7xl mx-auto w-full">
         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-5 bg-white p-6 rounded-3xl shadow-sm border border-slate-100 mt-2">
           <h1 className="text-2xl sm:text-3xl font-black text-slate-800 flex items-center gap-3">
-            <div className="p-2.5 bg-blue-600 text-white rounded-2xl"><Laptop size={24} /></div> Laporan Digitalisasi
+            <div className="p-2.5 bg-blue-600 text-white rounded-2xl"><Laptop size={24} /></div> Laporan Mahasiswa
           </h1>
           <div className="flex flex-col sm:flex-row w-full lg:w-auto gap-3 flex-wrap justify-end">
             <div className="relative w-full sm:w-40 shrink-0">

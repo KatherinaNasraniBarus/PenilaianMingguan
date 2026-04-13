@@ -196,7 +196,7 @@ export default function LaporDigitalisasi() {
             </div>
             <div>
               <h1 className="text-2xl sm:text-4xl font-black text-emerald-950 tracking-tight">Task Lists</h1>
-              <p className="text-sm sm:text-base font-bold text-emerald-700/60 mt-1">Selesaikan misi tugas Anda minggu ini.</p>
+              <p className="text-sm sm:text-base font-bold text-emerald-700/60 mt-1">Selesaikan misi tugas Anda sekarang.</p>
             </div>
           </div>
 
