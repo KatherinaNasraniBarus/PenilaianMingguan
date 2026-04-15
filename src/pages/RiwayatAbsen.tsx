@@ -48,7 +48,7 @@ export default function RiwayatAbsen() {
       return;
     }
 
-    fetch(`https://api-penilaian.vercel.app/get_history_absen.php?nim=${nim}`)
+    fetch(`https://api-penilaian-ruby.vercel.app/get_history_absen.php?nim=${nim}`)
       .then(r => r.json())
       .then(result => { if (result.status === "success") setAbsenHistory(result.data); })
       .catch(err => console.error(err))

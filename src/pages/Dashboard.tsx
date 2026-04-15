@@ -42,7 +42,7 @@ export default function Dashboard() {
 
   const fetchRiwayatDigital = (nim: string) => {
     setLoadingRiwayat(true);
-    fetch(`https://api-penilaian.vercel.app/get_riwayat_mahasiswa.php?nim=${nim}&t=${new Date().getTime()}`)
+    fetch(`https://api-penilaian-ruby.vercel.app/get_riwayat_mahasiswa.php?nim=${nim}&t=${new Date().getTime()}`)
       .then(r => r.json())
       .then(res => {
         if (res.status === "success" && res.data) {
@@ -63,7 +63,7 @@ export default function Dashboard() {
 
     if (nim) {
       // 1. Data Laporan Mingguan Manual
-      fetch(`https://api-penilaian.vercel.app/get_dashboard_mahasiswa.php?nim=${nim}`)
+      fetch(`https://api-penilaian-ruby.vercel.app/get_dashboard_mahasiswa.php?nim=${nim}`)
         .then(r => r.json())
         .then(result => {
           if (result.status === "success") {
@@ -89,7 +89,7 @@ export default function Dashboard() {
         }).finally(() => setLoading(false));
 
       // 2. Absensi
-      fetch(`https://api-penilaian.vercel.app/get_history_absen.php?nim=${nim}`)
+      fetch(`https://api-penilaian-ruby.vercel.app/get_history_absen.php?nim=${nim}`)
         .then(r => r.json())
         .then(result => {
           if (result.status === "success") {
@@ -146,7 +146,7 @@ export default function Dashboard() {
     e.preventDefault();
     setIsSavingEdit(true);
 
-    fetch("https://api-penilaian.vercel.app/update_digitalisasi.php", {
+    fetch("https://api-penilaian-ruby.vercel.app/update_digitalisasi.php", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({

@@ -25,7 +25,7 @@ export default function StudentRegister() {
 
   // Tarik data mentor saat halaman dimuat
   useEffect(() => {
-    fetch("https://api-penilaian.vercel.app/get_mentors.php")
+    fetch("https://api-penilaian-ruby.vercel.app/get_mentors.php")
       .then(res => res.json())
       .then(data => {
         if (data.status === "success") setMentorList(data.data);
@@ -84,7 +84,7 @@ export default function StudentRegister() {
     setLoading(true);
 
     try {
-      const response = await fetch("https://api-penilaian.vercel.app/register_mahasiswa.php", {
+      const response = await fetch("https://api-penilaian-ruby.vercel.app/register_mahasiswa.php", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ 

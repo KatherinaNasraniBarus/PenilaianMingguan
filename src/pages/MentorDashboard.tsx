@@ -167,7 +167,7 @@ export default function MentorDashboard() {
   };
   
   const fetchWeeks = useCallback(() => {
-    fetch("https://api-penilaian.vercel.app/manage_minggu.php")
+    fetch("https://api-penilaian-ruby.vercel.app/manage_minggu.php")
       .then(res => res.json())
       .then(data => {
         if (data.status === "success") {
@@ -179,7 +179,7 @@ export default function MentorDashboard() {
   }, [selectedWeek]);
 
   const fetchDeadlines = useCallback(() => {
-    fetch("https://api-penilaian.vercel.app/manage_deadlines.php")
+    fetch("https://api-penilaian-ruby.vercel.app/manage_deadlines.php")
       .then(res => res.json())
       .then(data => { if (data.status === "success") setDeadlines(data.data); })
       .catch(err => console.error("Gagal mengambil deadline:", err));
@@ -192,7 +192,7 @@ export default function MentorDashboard() {
     setMentorName(mentor.nama.split(" ")[0]);
     setUserRole(mentor.role || "mentor");
 
-    fetch(`https://api-penilaian.vercel.app/get_mahasiswa_by_mentor.php?mentor_id=${mentor.id}&minggu=${encodeURIComponent(selectedWeek)}`)
+    fetch(`https://api-penilaian-ruby.vercel.app/get_mahasiswa_by_mentor.php?mentor_id=${mentor.id}&minggu=${encodeURIComponent(selectedWeek)}`)
       .then(res => res.json())
       .then(data => {
         if (data.status === "success") { setStudents(data.data); setCurrentPage(1); }
@@ -208,7 +208,7 @@ export default function MentorDashboard() {
     if (!newWeekInput.trim()) return;
     setIsAddingWeek(true);
     try {
-      const res = await fetch("https://api-penilaian.vercel.app/manage_minggu.php", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ nama_minggu: newWeekInput.trim() }) });
+      const res = await fetch("https://api-penilaian-ruby.vercel.app/manage_minggu.php", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ nama_minggu: newWeekInput.trim() }) });
       const result = await res.json();
       if (result.status === "success") { setNewWeekInput(""); fetchWeeks(); } else alert(result.message);
     } catch { alert("Kesalahan koneksi ke server."); } finally { setIsAddingWeek(false); }
@@ -218,7 +218,7 @@ export default function MentorDashboard() {
     if (!tanggal) { alert("Silakan pilih tanggal!"); return; }
     setSavingDeadline(minggu);
     try {
-      const response = await fetch("https://api-penilaian.vercel.app/manage_deadlines.php", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ minggu, tanggal_deadline: tanggal }) });
+      const response = await fetch("https://api-penilaian-ruby.vercel.app/manage_deadlines.php", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ minggu, tanggal_deadline: tanggal }) });
       const result = await response.json();
       if (result.status === "success") fetchDeadlines(); else alert("Gagal menyimpan: " + result.message);
     } catch { alert("Kesalahan koneksi."); } finally { setSavingDeadline(null); }
@@ -226,7 +226,7 @@ export default function MentorDashboard() {
 
   const handleViewAbsen = (nim: string, nama: string) => {
     setSelectedStudentForAbsen({ nim, nama }); setIsAbsenModalOpen(true); setLoadingAbsen(true);
-    fetch(`https://api-penilaian.vercel.app/get_history_absen.php?nim=${nim}`)
+    fetch(`https://api-penilaian-ruby.vercel.app/get_history_absen.php?nim=${nim}`)
       .then(res => res.json())
       .then(result => { if (result.status === "success") setAbsenHistory(result.data); else setAbsenHistory([]); })
       .catch(() => setAbsenHistory([]))
@@ -234,7 +234,7 @@ export default function MentorDashboard() {
   };
 
   const fetchMentors = () => {
-    fetch("https://api-penilaian.vercel.app/get_mentors.php").then(res => res.json()).then(data => { if (data.status === "success") setMentorList(data.data); });
+    fetch("https://api-penilaian-ruby.vercel.app/get_mentors.php").then(res => res.json()).then(data => { if (data.status === "success") setMentorList(data.data); });
   };
 
   const openMentorModal = () => { setIsMentorModalOpen(true); setNewAccountInfo(null); setNewMentorName(""); fetchMentors(); };
@@ -242,7 +242,7 @@ export default function MentorDashboard() {
   const handleAddMentor = async (e: React.FormEvent) => {
     e.preventDefault(); if (!newMentorName.trim()) return; setIsAddingMentor(true);
     try {
-      const response = await fetch("https://api-penilaian.vercel.app/add_mentor.php", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ nama: newMentorName }) });
+      const response = await fetch("https://api-penilaian-ruby.vercel.app/add_mentor.php", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ nama: newMentorName }) });
       const result = await response.json();
       if (result.status === "success") { setNewAccountInfo({ username: result.data.username, password: result.data.password }); setNewMentorName(""); fetchMentors(); } else alert("Gagal: " + result.message);
     } catch { alert("Kesalahan koneksi."); } finally { setIsAddingMentor(false); }
@@ -259,7 +259,7 @@ export default function MentorDashboard() {
   if (!mentorToEditInput || !newMentorUsername.trim()) return;
   setIsUpdatingMentorUsername(true);
   try {
-    const response = await fetch("https://api-penilaian.vercel.app/update_mentor.php", {
+    const response = await fetch("https://api-penilaian-ruby.vercel.app/update_mentor.php", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id: mentorToEditInput.id, username: newMentorUsername.trim() })
@@ -296,7 +296,7 @@ export default function MentorDashboard() {
   const handleDeleteMentor = async (id: number, nama: string) => {
     if (window.confirm(`YAKIN INGIN MENGHAPUS MENTOR "${nama}"?`)) {
       try {
-        const res = await fetch("https://api-penilaian.vercel.app/delete_mentor.php", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id }) });
+        const res = await fetch("https://api-penilaian-ruby.vercel.app/delete_mentor.php", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id }) });
         const result = await res.json(); if (result.status === "success") fetchMentors();
       } catch { alert("Kesalahan koneksi."); }
     }
@@ -314,7 +314,7 @@ export default function MentorDashboard() {
     if (Object.keys(errors).length > 0) { setStudentFormErrors(errors); return; }
     setStudentFormErrors({}); setIsAddingStudent(true);
     try {
-      const response = await fetch("https://api-penilaian.vercel.app/add_mahasiswa.php", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ nama: newStudentName, nim: newStudentNim, email: newStudentEmail, mentor_id: selectedNewMentor }) });
+      const response = await fetch("https://api-penilaian-ruby.vercel.app/add_mahasiswa.php", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ nama: newStudentName, nim: newStudentNim, email: newStudentEmail, mentor_id: selectedNewMentor }) });
       const result = await response.json();
       if (result.status === "success") { setNewStudentAccountInfo({ nim: result.data.nim, password: result.data.password, email_sent: result.data.email_sent }); setNewStudentName(""); setNewStudentNim(""); setNewStudentEmail(""); setSelectedNewMentor(""); setRefreshTrigger(prev => prev + 1); }
       else { if (result.message.toLowerCase().includes("terdaftar")) setStudentFormErrors({ nim: result.message }); else alert("Gagal menambahkan: " + result.message); }
@@ -324,7 +324,7 @@ export default function MentorDashboard() {
   const handleDeleteStudent = async (nim: string, nama: string) => {
     if (window.confirm(`⚠️ Yakin ingin MENGHAPUS mahasiswa ${nama} (${nim}) beserta data absensinya?`)) {
       try {
-        const response = await fetch("https://api-penilaian.vercel.app/delete_mahasiswa.php", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ nim }) });
+        const response = await fetch("https://api-penilaian-ruby.vercel.app/delete_mahasiswa.php", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ nim }) });
         const result = await response.json(); if (result.status === "success") setRefreshTrigger(prev => prev + 1); else alert("Gagal menghapus: " + result.message);
       } catch { alert("Terjadi kesalahan."); }
     }
@@ -342,7 +342,7 @@ export default function MentorDashboard() {
     if (!studentToEdit || !selectedEditMentor) return;
     setIsUpdatingMentor(true);
     try {
-      const response = await fetch("https://api-penilaian.vercel.app/update_mahasiswa_mentor.php", {
+      const response = await fetch("https://api-penilaian-ruby.vercel.app/update_mahasiswa_mentor.php", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ nim: studentToEdit.nim, mentor_id: selectedEditMentor })
@@ -390,7 +390,7 @@ export default function MentorDashboard() {
 const handleResetWajah = async (nim: string, nama: string) => {
   if (window.confirm(`🔄 Yakin ingin mereset data wajah ${nama} (${nim})? Mahasiswa ini harus scan wajah ulang saat absen berikutnya.`)) {
     try {
-      const response = await fetch("https://api-penilaian.vercel.app/reset_wajah.php", {
+      const response = await fetch("https://api-penilaian-ruby.vercel.app/reset_wajah.php", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ nim })

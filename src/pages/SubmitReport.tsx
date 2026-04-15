@@ -41,8 +41,8 @@ export default function SubmitReport() {
     const loadData = async () => {
       try {
         const [resWeeks, resDl] = await Promise.all([
-          fetch("https://api-penilaian.vercel.app/manage_minggu.php"),
-          fetch("https://api-penilaian.vercel.app/manage_deadlines.php"),
+          fetch("https://api-penilaian-ruby.vercel.app/manage_minggu.php"),
+          fetch("https://api-penilaian-ruby.vercel.app/manage_deadlines.php"),
         ]);
         const dataWeeks = await resWeeks.json();
         const dataDl    = await resDl.json();
@@ -87,7 +87,7 @@ export default function SubmitReport() {
         }
 
         const resHist = await fetch(
-          `https://api-penilaian.vercel.app/get_dashboard_mahasiswa.php?nim=${storedNim}`
+          `https://api-penilaian-ruby.vercel.app/get_dashboard_mahasiswa.php?nim=${storedNim}`
         );
         const result = await resHist.json();
 
@@ -142,7 +142,7 @@ export default function SubmitReport() {
     };
 
     try {
-      const response = await fetch("https://api-penilaian.vercel.app/submit_laporan.php", {
+      const response = await fetch("https://api-penilaian-ruby.vercel.app/submit_laporan.php", {
         method:  "POST",
         headers: { "Content-Type": "application/json" },
         body:    JSON.stringify(payload),

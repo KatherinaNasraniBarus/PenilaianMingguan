@@ -28,7 +28,7 @@ export default function LaporDigitalisasi() {
 
   const fetchActiveTasks = (nim: string) => {
     setIsLoadingForm(true);
-    fetch(`https://api-penilaian.vercel.app/get_form_active.php?nim=${nim}&t=${new Date().getTime()}`)  
+    fetch(`https://api-penilaian-ruby.vercel.app/get_form_active.php?nim=${nim}&t=${new Date().getTime()}`)  
       .then(async (r) => {
         const text = await r.text();
         try {
@@ -97,7 +97,7 @@ export default function LaporDigitalisasi() {
     e.preventDefault();
     setIsSubmitting(true);
 
-    fetch("https://api-penilaian.vercel.app/submit_digitalisasi.php", {
+    fetch("https://api-penilaian-ruby.vercel.app/submit_digitalisasi.php", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({

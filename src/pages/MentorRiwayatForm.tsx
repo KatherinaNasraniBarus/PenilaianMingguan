@@ -14,7 +14,7 @@ export default function MentorRiwayatForm() {
 
   const fetchRiwayat = () => {
     setLoading(true);
-    fetch(`https://api-penilaian.vercel.app/admin_get_all_forms.php?t=${new Date().getTime()}`)
+    fetch(`https://api-penilaian-ruby.vercel.app/admin_get_all_forms.php?t=${new Date().getTime()}`)
       .then((r) => r.json())
       .then((data) => {
         if (data.status === "success") setListForm(data.data || []);
@@ -34,7 +34,7 @@ export default function MentorRiwayatForm() {
   const confirmDelete = () => {
     if (formToDelete === null) return;
     setIsDeleting(true);
-    fetch(`https://api-penilaian.vercel.app/admin_delete_form.php?id=${formToDelete}`)
+    fetch(`https://api-penilaian-ruby.vercel.app/admin_delete_form.php?id=${formToDelete}`)
       .then(r => r.json())
       .then(data => {
         if (data.status === "success") {
@@ -56,7 +56,7 @@ export default function MentorRiwayatForm() {
     // Update UI sementara biar terlihat instan (Optimistic UI)
     setListForm(listForm.map(f => f.id === id ? { ...f, is_active: newStatus.toString() } : f));
 
-    fetch("https://api-penilaian.vercel.app/admin_toggle_status.php", {
+    fetch("https://api-penilaian-ruby.vercel.app/admin_toggle_status.php", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id, is_active: newStatus })

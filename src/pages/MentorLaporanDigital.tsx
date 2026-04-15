@@ -15,8 +15,8 @@ export default function MentorLaporanDigital() {
   useEffect(() => {
     setLoading(true);
     Promise.all([
-      fetch(`https://api-penilaian.vercel.app/get_digitalisasi_mentor.php?mentor=${mentorName}&t=${new Date().getTime()}`).then(r => r.json()),
-      fetch(`https://api-penilaian.vercel.app/admin_get_all_forms.php?t=${new Date().getTime()}`).then(r => r.json())
+      fetch(`https://api-penilaian-ruby.vercel.app/get_digitalisasi_mentor.php?mentor=${mentorName}&t=${new Date().getTime()}`).then(r => r.json()),
+      fetch(`https://api-penilaian-ruby.vercel.app/admin_get_all_forms.php?t=${new Date().getTime()}`).then(r => r.json())
     ])
     .then(([laporanData, formData]) => {
       if (laporanData.status === "success") setLaporan(laporanData.data || []);

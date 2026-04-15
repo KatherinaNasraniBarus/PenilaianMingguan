@@ -173,10 +173,8 @@ export default function MentorRekap() {
     setLoading(true);
     setError("");
 
-    // ✅ FIX UTAMA: Hapus "/api-penilaian/" dari URL — path duplikat menyebabkan 404
-    // SEBELUM (SALAH): https://api-penilaian.vercel.app/api-penilaian/get_mahasiswa_by_mentor.php
-    // SESUDAH (BENAR): https://api-penilaian.vercel.app/get_mahasiswa_by_mentor.php
-    fetch(`https://api-penilaian.vercel.app/get_mahasiswa_by_mentor.php?mentor_id=${mentor.id}&rekap=1`)
+ 
+    fetch(`https://api-penilaian-ruby.vercel.app/get_mahasiswa_by_mentor.php?mentor_id=${mentor.id}&rekap=1`)
       .then(r => {
         if (!r.ok) throw new Error(`HTTP ${r.status}: ${r.statusText}`);
         return r.json();
@@ -203,7 +201,7 @@ export default function MentorRekap() {
     const attVal  = s.attitude  === "" || s.attitude  === 0 ? null : Number(s.attitude);
     const digiVal = s.digitalisasi === "" || s.digitalisasi === 0 ? null : Number(s.digitalisasi);
     try {
-      await fetch("https://api-penilaian.vercel.app/simpan_nilai.php", {
+      await fetch("https://api-penilaian-ruby.vercel.app/simpan_nilai.php", {
         method:  "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -231,7 +229,7 @@ export default function MentorRekap() {
     if (modal.mode === "verifikasi") {
       setVerifyingId(s.id);
       try {
-        const r = await fetch("https://api-penilaian.vercel.app/verifikasi_administrasi.php", {
+        const r = await fetch("https://api-penilaian-ruby.vercel.app/verifikasi_administrasi.php", {
           method:  "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ nim: s.nim, mentor_id: mentorId }),
@@ -246,7 +244,7 @@ export default function MentorRekap() {
 
     } else {
       try {
-        const r = await fetch("https://api-penilaian.vercel.app/verifikasi_administrasi.php", {
+        const r = await fetch("https://api-penilaian-ruby.vercel.app/verifikasi_administrasi.php", {
           method:  "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ nim: s.nim, mentor_id: mentorId, action: "reset" }),

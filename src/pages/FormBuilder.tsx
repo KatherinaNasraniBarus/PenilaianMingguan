@@ -86,8 +86,8 @@ export default function FormBuilder() {
     setIsSaving(true);
 
     const url = editId 
-      ? "https://api-penilaian.vercel.app/admin_update_form.php" 
-      : "https://api-penilaian.vercel.app/admin_save_form.php";
+      ? "https://api-penilaian-ruby.vercel.app/admin_update_form.php" 
+      : "https://api-penilaian-ruby.vercel.app/admin_save_form.php";
       
     const formattedDeadline = deadlineTugas.replace('T', ' ') + ":00";
 
