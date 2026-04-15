@@ -265,7 +265,7 @@ export default function Dashboard() {
             <p className="text-emerald-700/60 mt-1.5 text-sm sm:text-base font-medium">Pantau aktivitas dan riwayat laporan Anda.</p>
           </div>
           <div className="flex flex-wrap gap-3">
-            <a  href={`https://absensai-kamera.vercel.app/?nim=${userNim}`} target="_blank" rel="noopener noreferrer"
+            <a  href={`https://absensai.pages.dev/?nim=${userNim}`} target="_blank" rel="noopener noreferrer"
               className="flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-5 sm:px-6 py-2.5 sm:py-3 rounded-xl font-bold transition-all shadow-md active:scale-95 text-sm sm:text-base flex-1 sm:flex-none">
               <UserCheck size={20} /> Isi Presensi 
             </a>
