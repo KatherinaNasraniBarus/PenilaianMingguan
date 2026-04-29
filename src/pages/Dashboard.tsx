@@ -171,7 +171,7 @@ export default function Dashboard() {
   const currentReports = reports.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
   const statCards = [
-    { label: "BPU Kepling",  val: totalKepling,      icon: <Users size={24} />,     color: "text-emerald-600", bg: "bg-emerald-50" },
+    { label: "BPU Kepling",  val: totalKepling,     icon: <Users size={24} />,     color: "text-emerald-600", bg: "bg-emerald-50" },
     { label: "BPU Keluarga", val: totalKeluarga,    icon: <Heart size={24} />,     color: "text-blue-600",    bg: "bg-blue-50" },
     { label: "Sosialisasi",  val: totalSosialisasi, icon: <Megaphone size={24} />, color: "text-purple-600",  bg: "bg-purple-50" },
     { label: "Hadir Zoom",   val: jumlahHadir,      icon: <Video size={24} />,     color: "text-orange-600",  bg: "bg-orange-50" },
@@ -276,6 +276,7 @@ export default function Dashboard() {
           </div>
         </div>
 
+        {/* ─── KOTAK STATISTIK ─── */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
           {statCards.map(card => (
             <div key={card.label} className="bg-white p-4 sm:p-6 rounded-2xl border border-emerald-50 shadow-[0_4px_20px_rgb(0,0,0,0.03)] hover:shadow-[0_4px_20px_rgb(0,0,0,0.06)] transition-all">
@@ -284,6 +285,30 @@ export default function Dashboard() {
               <h3 className={`text-2xl sm:text-3xl font-black ${card.color}`}>{card.val}</h3>
             </div>
           ))}
+        </div>
+
+        {/* ─── BANNER FORM SOSIALISASI KHUSUS (HIJAU EMERALD) ─── */}
+        <div className="bg-gradient-to-r from-emerald-600 to-emerald-800 rounded-[2rem] p-6 sm:p-8 shadow-lg text-white relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-6">
+          <div className="absolute top-0 right-0 -mt-10 -mr-10 w-40 h-40 bg-white opacity-10 rounded-full blur-2xl pointer-events-none"></div>
+          <div className="absolute bottom-0 left-0 -mb-10 -ml-10 w-32 h-32 bg-emerald-400 opacity-20 rounded-full blur-2xl pointer-events-none"></div>
+          
+          <div className="relative z-10">
+            <h2 className="text-xl sm:text-2xl font-black mb-2 flex items-center gap-2">
+              <FileText size={24} /> Form Hasil Sosialisasi
+            </h2>
+            <p className="text-emerald-100 text-sm sm:text-base font-medium max-w-2xl leading-relaxed">
+             Setelah Anda selesai melakukan kegiatan sosialisasi di masing-masing lingkungan (Kepling), pastikan untuk mengumpulkan seluruh data diri peserta BPU dan segera masukkan ke dalam formulir ini.
+            </p>
+          </div>
+          
+          <a 
+            href="https://website-form-ep2k.vercel.app/" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="relative z-10 shrink-0 bg-white text-emerald-700 hover:bg-emerald-50 px-6 py-3.5 rounded-xl font-black transition-all shadow-xl flex items-center gap-2 active:scale-95 w-full md:w-auto justify-center"
+          >
+            Buka Form <ExternalLink size={18} />
+          </a>
         </div>
 
         {/* ─── RIWAYAT TUGAS DIGITALISASI DENGAN TOMBOL EDIT ─── */}
