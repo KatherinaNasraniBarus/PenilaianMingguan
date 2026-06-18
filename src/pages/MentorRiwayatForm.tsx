@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { Laptop, Calendar, Trash2, CheckCircle, XCircle, Loader2, ChevronRight, Hash, ClipboardList , Edit3, AlertTriangle, CalendarClock, Clock, Power } from "lucide-react";
+import axios from "axios"; // 🚀 Pastikan axios sudah di-install (npm install axios)
+import { Laptop, Calendar, Trash2, CheckCircle, XCircle, Loader2, ChevronRight, Hash, ClipboardList , Edit3, AlertTriangle, CalendarClock, Clock, Power, Edit2, Save } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import logo from "../image/bpjstk.png";
@@ -11,6 +12,10 @@ export default function MentorRiwayatForm() {
 
   const [formToDelete, setFormToDelete] = useState<number | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+
+  // 🚀 STATE UNTUK FORENSIK (EDIT TUGAS)
+  const [editModalData, setEditModalData] = useState<{ id: number, keterangan: string, is_active: string } | null>(null);
+  const [isUpdating, setIsUpdating] = useState(false);
 
   const fetchRiwayat = () => {
     setLoading(true);
@@ -48,12 +53,8 @@ export default function MentorRiwayatForm() {
       .finally(() => setIsDeleting(false));
   };
 
-  // 🚀 FUNGSI BARU: Mengubah Status Aktif/Nonaktif
   const toggleStatus = (id: number, currentStatus: string | number) => {
-    // Jika sedang 1, ubah jadi 0. Jika sedang 0, ubah jadi 1.
     const newStatus = currentStatus.toString() === "1" ? 0 : 1;
-    
-    // Update UI sementara biar terlihat instan (Optimistic UI)
     setListForm(listForm.map(f => f.id === id ? { ...f, is_active: newStatus.toString() } : f));
 
     fetch("https://api-penilaian-ruby.vercel.app/admin_toggle_status.php", {
@@ -64,7 +65,6 @@ export default function MentorRiwayatForm() {
     .then(r => r.json())
     .then(data => {
       if (data.status !== "success") {
-        // Jika server gagal, kembalikan ke status awal
         alert("❌ Gagal mengubah status form.");
         setListForm(listForm.map(f => f.id === id ? { ...f, is_active: currentStatus.toString() } : f));
       }
@@ -73,6 +73,43 @@ export default function MentorRiwayatForm() {
       alert("Terjadi kesalahan koneksi!");
       setListForm(listForm.map(f => f.id === id ? { ...f, is_active: currentStatus.toString() } : f));
     });
+  };
+
+  // 🚀 FUNGSI FORENSIK: Menyimpan Perubahan Judul Tugas
+  const handleUpdateTask = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editModalData) return;
+
+    setIsUpdating(true);
+    try {
+      // Ambil identitas admin/mentor (bisa disesuaikan dengan key localStorage-mu)
+      const userNim = localStorage.getItem("userName") || "Admin / Mentor"; 
+
+      // ⚠️ GANTI URL INI DENGAN DOMAIN/HOSTING API PHP KAMU
+      // GANTI localhost MENJADI URL VERCEL KAMU
+const response = await axios.post('https://api-penilaian-ruby.vercel.app/update_task.php', {
+  task_id: editModalData.id,
+  nim: userNim,
+  judul_task: editModalData.keterangan,
+  status_task: editModalData.is_active
+});
+
+      alert(response.data.message);
+      
+      // Tutupan refresh data agar perubahan langsung terlihat
+      setEditModalData(null);
+      fetchRiwayat(); 
+
+    } catch (error: any) {
+      if (error.response) {
+        alert(error.response.data.message);
+      } else {
+        console.error("Gagal terhubung ke server", error);
+        alert("Terjadi kesalahan pada server.");
+      }
+    } finally {
+      setIsUpdating(false);
+    }
   };
 
   const formatTanggalAman = (tgl: string | null | undefined, isDeadline = false) => {
@@ -88,18 +125,66 @@ export default function MentorRiwayatForm() {
   return (
     <div className="min-h-screen bg-slate-50 pb-20 relative">
       
+      {/* 🚀 MODAL FORENSIK: FORM EDIT TUGAS */}
+      <AnimatePresence>
+        {editModalData !== null && (
+          <motion.div 
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} 
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm"
+          >
+            <motion.div 
+              initial={{ scale: 0.9, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.9, opacity: 0, y: 20 }} 
+              className="bg-white rounded-[2rem] p-8 max-w-sm w-full shadow-2xl border border-blue-100"
+            >
+              <div className="flex items-center gap-3 mb-6">
+                <div className="p-3 bg-blue-100 text-blue-600 rounded-xl"><Edit2 size={24} /></div>
+                <h3 className="text-xl font-black text-slate-900">Edit Judul Tugas</h3>
+              </div>
+              
+              <form onSubmit={handleUpdateTask}>
+                <div className="mb-6">
+                  <label className="block text-sm font-bold text-slate-700 mb-2">Keterangan / Nama Tugas</label>
+                  <input 
+                    type="text" 
+                    required
+                    value={editModalData.keterangan}
+                    onChange={(e) => setEditModalData({...editModalData, keterangan: e.target.value})}
+                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none font-medium text-slate-800"
+                  />
+                </div>
+                
+                <div className="flex gap-3 w-full">
+                  <button 
+                    type="button"
+                    onClick={() => setEditModalData(null)}
+                    disabled={isUpdating}
+                    className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-3.5 rounded-xl transition-all active:scale-95"
+                  >
+                    Batal
+                  </button>
+                  <button 
+                    type="submit"
+                    disabled={isUpdating}
+                    className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg shadow-blue-200 active:scale-95"
+                  >
+                    {isUpdating ? <Loader2 size={18} className="animate-spin" /> : <><Save size={18}/> Simpan</>}
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* MODAL HAPUS (BAWAAN LAMA) */}
       <AnimatePresence>
         {formToDelete !== null && (
           <motion.div 
-            initial={{ opacity: 0 }} 
-            animate={{ opacity: 1 }} 
-            exit={{ opacity: 0 }} 
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} 
             className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm"
           >
             <motion.div 
-              initial={{ scale: 0.9, opacity: 0, y: 20 }} 
-              animate={{ scale: 1, opacity: 1, y: 0 }} 
-              exit={{ scale: 0.9, opacity: 0, y: 20 }} 
+              initial={{ scale: 0.9, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.9, opacity: 0, y: 20 }} 
               className="bg-white rounded-[2rem] p-8 max-w-sm w-full shadow-2xl text-center border border-red-100 flex flex-col items-center"
             >
               <div className="w-20 h-20 bg-red-50 text-red-500 rounded-full flex items-center justify-center mb-5 shadow-inner">
@@ -172,7 +257,6 @@ export default function MentorRiwayatForm() {
                 <div className={`absolute top-0 right-0 w-24 h-24 -mr-8 -mt-8 rounded-full opacity-10 ${form.is_active === "1" ? 'bg-emerald-500' : 'bg-red-500'}`}></div>
 
                 <div className="flex justify-between items-start mb-4">
-                  {/* 🚀 INI DIA TOMBOL SAKLARNYA! */}
                   <button 
                     onClick={() => toggleStatus(form.id, form.is_active)}
                     title={form.is_active === "1" ? "Klik untuk mematikan form ini" : "Klik untuk menghidupkan form ini"}
@@ -181,16 +265,26 @@ export default function MentorRiwayatForm() {
                     <Power size={14} />
                     {form.is_active === "1" ? "Status: Aktif" : "Status: Nonaktif"}
                   </button>
-
                   <span className="text-xs font-mono font-bold text-slate-300">ID #{form.id}</span>
                 </div>
 
                 <h3 className={`text-2xl font-black leading-tight mb-1 ${form.is_active === "1" ? 'text-slate-800' : 'text-slate-500'}`}>
                   {form.minggu}
                 </h3>
-                <span className={`text-xs font-bold px-2.5 py-1 rounded-md w-fit mb-5 ${form.is_active === "1" ? 'text-purple-600 bg-purple-50' : 'text-slate-500 bg-slate-100'}`}>
-                  {form.keterangan || "Tugas Digitalisasi"}
-                </span>
+                
+                {/* 🚀 TOMBOL EDIT JUDUL FORENSIK DI SINI */}
+                <div className="flex items-center gap-2 mb-5">
+                  <span className={`text-xs font-bold px-2.5 py-1 rounded-md max-w-[200px] truncate ${form.is_active === "1" ? 'text-purple-600 bg-purple-50' : 'text-slate-500 bg-slate-100'}`}>
+                    {form.keterangan || "Tugas Digitalisasi"}
+                  </span>
+                  <button 
+                    onClick={() => setEditModalData({ id: form.id, keterangan: form.keterangan || "", is_active: form.is_active })}
+                    className="p-1.5 bg-slate-100 hover:bg-blue-100 text-slate-400 hover:text-blue-600 rounded-md transition-colors"
+                    title="Edit Judul Tugas"
+                  >
+                    <Edit2 size={12} />
+                  </button>
+                </div>
                 
                 <div className={`space-y-3 mb-8 flex-1 ${form.is_active === "0" && 'opacity-60'}`}>
                    <div className="flex items-center gap-3 text-sm font-bold text-slate-500">
@@ -216,7 +310,7 @@ export default function MentorRiwayatForm() {
                     <Trash2 size={16} /> Hapus
                   </button>
                   <button onClick={() => navigate('/mentor/form-builder', { state: { editData: form } })} className="flex-1 flex items-center justify-center gap-2 py-4 bg-slate-900 text-white rounded-2xl font-black text-xs hover:bg-slate-800 transition-all shadow-lg shadow-slate-200">
-                    <Edit3 size={16} /> Kelola
+                    <Edit3 size={16} /> Kelola Form
                   </button>
                 </div>
               </motion.div>
